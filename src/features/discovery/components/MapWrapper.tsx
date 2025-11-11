@@ -66,42 +66,53 @@ export function MapSurface({
     return () => clearInterval(id);
   }, [center.lat, center.lng, zoom, onRegionChange]);
 
+  // Calculate marker positions (simplified - in real app, use map projection)
+  const markerPositions = useMemo(() => {
+    // Distribute markers across the map viewport
+    const positions: Array<{ left: string; top: string; marker: MapMarker }> = [];
+    const positionsMap = [
+      { left: '35%', top: '40%' },
+      { left: '58%', top: '55%' },
+      { left: '72%', top: '30%' },
+      { left: '25%', top: '60%' },
+      { left: '65%', top: '70%' },
+      { left: '45%', top: '25%' },
+      { left: '80%', top: '50%' },
+      { left: '20%', top: '35%' },
+    ];
+    
+    markers.forEach((marker, index) => {
+      const pos = positionsMap[index % positionsMap.length];
+      if (pos) {
+        positions.push({ ...pos, marker });
+      }
+    });
+    
+    return positions;
+  }, [markers]);
+
   return (
-    <div ref={ref} className="relative h-full w-full">
+    <div ref={ref} className="relative h-full w-full" style={{ minHeight: '100%' }}>
       <div className="absolute inset-0 provider-placeholder bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-100 via-slate-50 to-white" />
-      {/* Pins (SVG overlay) */}
+      {/* Map provider placeholder text */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[10px] text-slate-500">
           Map provider here
         </div>
       </div>
-      {/* Fake pins for preview */}
-      {markers.length > 0 && (
-        <>
-          <div className="absolute left-[35%] top-[40%] -translate-x-1/2 -translate-y-1/2 pointer-events-auto">
-            <Pin
-              status={markers[0]?.status}
-              onClick={() => onPinTap?.(markers[0])}
-            />
-          </div>
-          {markers[1] && (
-            <div className="absolute left-[58%] top-[55%] -translate-x-1/2 -translate-y-1/2 pointer-events-auto">
-              <Pin
-                status={markers[1].status}
-                onClick={() => onPinTap?.(markers[1])}
-              />
-            </div>
-          )}
-          {markers[2] && (
-            <div className="absolute left-[72%] top-[30%] -translate-x-1/2 -translate-y-1/2 pointer-events-auto">
-              <Pin
-                status={markers[2].status}
-                onClick={() => onPinTap?.(markers[2])}
-              />
-            </div>
-          )}
-        </>
-      )}
+      {/* Render all markers */}
+      {markerPositions.map(({ left, top, marker }, index) => (
+        <div
+          key={marker.id || index}
+          className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-auto z-20"
+          style={{ left, top }}
+        >
+          <Pin
+            status={marker.status}
+            onClick={() => onPinTap?.(marker)}
+          />
+        </div>
+      ))}
     </div>
   );
 }

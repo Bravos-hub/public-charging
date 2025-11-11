@@ -2,7 +2,7 @@
  * Station Details Overview Component (TypeScript)
  */
 
-import React from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { MapPin, ArrowLeft, Share2, Heart, Navigation2, Phone, Images } from 'lucide-react';
 import { EVZ_COLORS } from '../../../core/utils/constants';
 import { Header } from '../../../shared/components/ui/Header';
@@ -88,6 +88,33 @@ export function StationOverview({
   };
 
   const s = station || defaultStation;
+  const galleryRef = useRef<HTMLDivElement>(null);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const imageCount = 5;
+
+  useEffect(() => {
+    const gallery = galleryRef.current;
+    if (!gallery) return;
+
+    function handleScroll(): void {
+      const galleryEl = galleryRef.current;
+      if (!galleryEl) return;
+      const scrollLeft = galleryEl.scrollLeft;
+      const scrollWidth = galleryEl.scrollWidth;
+      const clientWidth = galleryEl.clientWidth;
+      const scrollPercentage = scrollLeft / (scrollWidth - clientWidth);
+      const index = Math.round(scrollPercentage * (imageCount - 1));
+      setActiveImageIndex(Math.min(index, imageCount - 1));
+    }
+
+    gallery.addEventListener('scroll', handleScroll);
+    return () => {
+      const galleryEl = galleryRef.current;
+      if (galleryEl) {
+        galleryEl.removeEventListener('scroll', handleScroll);
+      }
+    };
+  }, [imageCount]);
 
   return (
     <div className="min-h-[100dvh] bg-white text-slate-900">
@@ -124,15 +151,32 @@ export function StationOverview({
         {/* Gallery */}
         <div className="mt-4 px-4">
           <div className="relative">
-            <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              {[1, 2, 3].map((i) => (
+            <div
+              ref={galleryRef}
+              className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            >
+              {Array.from({ length: imageCount }).map((_, i) => (
                 <div
                   key={i}
-                  className="min-w-[85%] snap-center rounded-2xl overflow-hidden border border-slate-200 bg-slate-100 h-40 grid place-items-center"
+                  className="min-w-[85%] snap-center rounded-2xl overflow-hidden border border-slate-200 bg-slate-100 h-40 grid place-items-center flex-shrink-0"
                 >
                   <Images className="h-8 w-8 text-slate-400" />
-                  <span className="sr-only">Image {i}</span>
+                  <span className="sr-only">Image {i + 1}</span>
                 </div>
+              ))}
+            </div>
+            {/* Scroll indicator dots */}
+            <div className="flex justify-center gap-1.5 mt-2">
+              {Array.from({ length: imageCount }).map((_, i) => (
+                <div
+                  key={i}
+                  className={`h-1.5 rounded-full transition-all ${
+                    i === activeImageIndex
+                      ? 'w-6 bg-slate-600'
+                      : 'w-1.5 bg-slate-300'
+                  }`}
+                  aria-hidden="true"
+                />
               ))}
             </div>
           </div>

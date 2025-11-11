@@ -5,8 +5,10 @@
 import React, { useState } from 'react';
 import { EVZ_COLORS } from '../../core/utils/constants';
 import { CONNECTOR_TYPES } from '../../core/utils/constants';
+import { useNavigation } from '../../core';
 
 export function FiltersScreen(): React.ReactElement {
+  const { replace } = useNavigation();
   const [onlyAvail, setOnlyAvail] = useState(true);
   const [minKw, setMinKw] = useState(3);
   const [maxKw, setMaxKw] = useState(350);
@@ -70,11 +72,23 @@ export function FiltersScreen(): React.ReactElement {
           </div>
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <button className="h-11 rounded-xl border border-slate-300 bg-white text-slate-700">
+          <button
+            onClick={() => {
+              setOnlyAvail(false);
+              setMinKw(3);
+              setMaxKw(350);
+              setSel([]);
+            }}
+            className="h-11 rounded-xl border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition-colors"
+          >
             Clear
           </button>
           <button
-            className="h-11 rounded-xl text-white font-medium"
+            onClick={() => {
+              // Apply filters and navigate back to Discover
+              replace('DISCOVER');
+            }}
+            className="h-11 rounded-xl text-white font-medium hover:opacity-90 transition-opacity"
             style={{ backgroundColor: EVZ_COLORS.orange }}
           >
             Apply Filters
