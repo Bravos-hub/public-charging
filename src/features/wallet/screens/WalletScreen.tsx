@@ -5,7 +5,7 @@
 import React, { useMemo, useState } from 'react';
 import { Wallet as WalletIcon, CreditCard, Plus, Star, Info, RefreshCw, FileDown } from 'lucide-react';
 import { EVZ_COLORS } from '../../../core/utils/constants';
-import { useApp } from '../../../core';
+import { useApp, useNavigation } from '../../../core';
 import type { PaymentMethod } from '../../../core/types';
 
 interface MaskProps {
@@ -69,6 +69,7 @@ export function WalletScreen({
   onTransactions,
 }: WalletScreenProps): React.ReactElement {
   const { wallet, setWallet } = useApp();
+  const { push } = useNavigation();
   const [loading, setLoading] = useState(false);
 
   const defaultMethod = useMemo(
@@ -140,7 +141,10 @@ export function WalletScreen({
             </button>
             <button
               className="h-11 rounded-xl border border-slate-300 bg-white text-slate-700 inline-flex items-center justify-center gap-2"
-              onClick={onTransactions}
+              onClick={() => {
+                onTransactions?.();
+                push('WALLET_TRANSACTIONS');
+              }}
             >
               <FileDown className="h-4 w-4" /> Transactions
             </button>
@@ -173,7 +177,10 @@ export function WalletScreen({
             <button
               className="h-11 w-full rounded-xl text-white font-medium inline-flex items-center justify-center gap-2"
               style={{ backgroundColor: EVZ_COLORS.orange }}
-              onClick={onAddMethod}
+              onClick={() => {
+                onAddMethod?.();
+                push('WALLET_ADD_METHOD');
+              }}
             >
               <Plus className="h-4 w-4" /> Add Payment Method
             </button>

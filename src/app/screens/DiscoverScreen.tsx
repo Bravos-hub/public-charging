@@ -32,17 +32,36 @@ export function DiscoverScreen(): React.ReactElement {
       {/* Station list teaser */}
       <div className="absolute inset-x-0" style={{ bottom: 24 }}>
         <div className="px-4 space-y-2">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="p-3 rounded-2xl border border-slate-200 bg-white shadow-sm">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-[13px] font-semibold text-slate-800">Central Hub {i}</div>
-                  <div className="text-[11px] text-slate-500">0.{i} km • ★★★★☆ • 2/3 Available</div>
+          {[1, 2, 3].map((i) => {
+            const station = {
+              id: `station-${i}`,
+              name: `Central Hub ${i}`,
+              location: { lat: 0.314, lng: 32.582 },
+              address: `Plot ${10 + i} Main Street, City Center, Kampala, UG`,
+              rating: 4.5,
+              price: 3000,
+              connectors: [],
+              availability: { total: 4, available: 2, busy: 2, offline: 0 },
+              amenities: [],
+              images: [],
+              open24_7: true,
+            };
+            return (
+              <button
+                key={i}
+                onClick={() => push('STATION_DETAILS', { station, stationId: station.id })}
+                className="w-full p-3 rounded-2xl border border-slate-200 bg-white shadow-sm text-left hover:shadow-md transition-shadow"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-[13px] font-semibold text-slate-800">{station.name}</div>
+                    <div className="text-[11px] text-slate-500">0.{i} km • ★★★★☆ • 2/3 Available</div>
+                  </div>
+                  <div className="text-[11px] text-slate-600">CCS2 • 50kW</div>
                 </div>
-                <div className="text-[11px] text-slate-600">CCS2 • 50kW</div>
-              </div>
-            </div>
-          ))}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -50,7 +69,8 @@ export function DiscoverScreen(): React.ReactElement {
       <div className="absolute inset-x-0" style={{ bottom: 88 }}>
         <div className="px-4 max-w-md mx-auto flex justify-end">
           <button
-            className="h-14 w-14 rounded-2xl text-white shadow-xl flex items-center justify-center"
+            onClick={() => push('ACTIVATION_SCAN')}
+            className="h-14 w-14 rounded-2xl text-white shadow-xl flex items-center justify-center hover:shadow-2xl transition-shadow"
             style={{ background: `linear-gradient(135deg, ${EVZ_COLORS.green}, #10b981)` }}
             title="Scan to charge"
           >

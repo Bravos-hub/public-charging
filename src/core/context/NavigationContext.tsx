@@ -20,11 +20,42 @@ export interface NavigationContextValue {
 const NavCtx = createContext<NavigationContextValue | null>(null);
 
 export const ROUTES = {
+  // Main tabs
   DISCOVER: { title: 'Discover chargers' },
   ACTIVITY: { title: 'Activity' },
   WALLET: { title: 'Wallet' },
   PROFILE: { title: 'Profile' },
   FILTERS: { title: 'Filters' },
+  
+  // Station flows
+  STATION_DETAILS: { title: 'Station Details' },
+  STATION_CHARGERS: { title: 'Chargers' },
+  STATION_AMENITIES: { title: 'Amenities & Chat' },
+  
+  // Booking flows
+  BOOK_FIXED_TIME: { title: 'Reserve Station' },
+  BOOK_MOBILE_TIME: { title: 'Book Mobile Charging' },
+  BOOK_PAYMENT: { title: 'Payment' },
+  BOOK_CONFIRMATION: { title: 'Reservation Confirmed' },
+  BOOK_DETAIL: { title: 'Booking Details' },
+  
+  // Charging flows
+  ACTIVATION_SCAN: { title: 'Scan QR Code' },
+  ACTIVATION_ENTER_ID: { title: 'Enter Charger ID' },
+  ACTIVATION_CHOOSE_CONNECTOR: { title: 'Choose Connector' },
+  CHARGING_READY: { title: 'Charging Ready' },
+  CHARGING_IN_PROGRESS: { title: 'Charging' },
+  CHARGING_COMPLETE: { title: 'Charging Complete' },
+  CHARGING_STOP: { title: 'Stop Charging' },
+  
+  // Wallet flows
+  WALLET_ADD_METHOD: { title: 'Add Payment Method' },
+  WALLET_TRANSACTIONS: { title: 'Transactions' },
+  
+  // Profile flows
+  PROFILE_SETTINGS: { title: 'Settings' },
+  PROFILE_NOTIFICATIONS: { title: 'Notifications' },
+  PROFILE_LANGUAGE: { title: 'Language & Units' },
 } as const;
 
 interface NavigationProviderProps {
