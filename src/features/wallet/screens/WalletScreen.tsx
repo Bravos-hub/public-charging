@@ -120,15 +120,8 @@ export function WalletScreen({
   const displayBalance = wallet.balance > 0 ? wallet.balance : 125000;
 
   return (
-    <div className="min-h-[100dvh] bg-white text-slate-900">
-      <div className="sticky top-0 z-10 w-full" style={{ backgroundColor: EVZ_COLORS.green }}>
-        <div className="max-w-md mx-auto h-14 px-4 flex items-center text-white">
-          <WalletIcon className="h-5 w-5" />
-          <span className="ml-2 font-semibold">Wallet</span>
-        </div>
-      </div>
-
-      <main className="max-w-md mx-auto px-4 py-4 pb-28">
+    <div className="w-full bg-white text-slate-900">
+      <div className="px-4 py-4 pb-6">
         {/* Balance card */}
         <div className="p-4 rounded-2xl border border-slate-200 bg-white">
           <div className="text-[12px] text-slate-500">EVzone Pay Balance</div>
@@ -186,7 +179,7 @@ export function WalletScreen({
             </button>
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

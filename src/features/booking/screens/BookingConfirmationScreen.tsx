@@ -38,8 +38,8 @@ export function BookingConfirmationScreen({
       const startDate = new Date(booking.startTime);
       const endDate = booking.endTime ? new Date(booking.endTime) : new Date(startDate.getTime() + 90 * 60000);
       return {
-        station: booking.stationName || 'Central Hub — Downtown Mall',
-        address: booking.stationAddress || 'Plot 10 Main St, Kampala, UG',
+        station: booking.stationName || booking.location?.address || 'Central Hub — Downtown Mall',
+        address: booking.stationAddress || booking.location?.address || 'Plot 10 Main St, Kampala, UG',
         date: startDate.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }),
         time: `${startDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} — ${endDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
         vehicle: booking.vehicleName || 'Model X — UAX 123A',

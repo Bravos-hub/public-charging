@@ -438,14 +438,7 @@ export function ActivityScreen(): React.ReactElement {
   const [tab, setTab] = useState<'activity' | 'history'>('activity');
 
   return (
-    <div className="min-h-[100dvh] bg-white text-slate-900">
-      <div className="sticky top-0 z-10 w-full" style={{ backgroundColor: EVZ_COLORS.green }}>
-        <div className="max-w-md mx-auto h-14 px-4 flex items-center justify-between text-white">
-          <div className="flex items-center gap-2">
-            <span className="font-semibold">Activity & History</span>
-          </div>
-        </div>
-      </div>
+    <div className="w-full bg-white text-slate-900">
 
       {/* Toggle */}
       <div className="max-w-md mx-auto px-4 pt-4">

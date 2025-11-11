@@ -7,7 +7,7 @@ import { Settings, Bell, History as HistoryIcon, Home } from 'lucide-react';
 
 export function ProfileScreen(): React.ReactElement {
   return (
-    <div className="h-full p-4 max-w-md mx-auto grid gap-3">
+    <div className="w-full p-4 grid gap-3">
       <button className="h-11 rounded-xl border border-slate-300 bg-white text-slate-700 inline-flex items-center gap-2 px-3">
         <Settings className="h-4 w-4" /> Profile & Settings
       </button>

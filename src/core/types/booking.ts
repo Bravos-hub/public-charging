@@ -9,6 +9,8 @@ export type BookingStatus = 'pending' | 'confirmed' | 'active' | 'completed' | '
 export interface Booking {
   id: string;
   stationId?: string;
+  stationName?: string; // Display name for the station
+  stationAddress?: string; // Full address for display
   location?: {
     lat: number;
     lng: number;
@@ -20,6 +22,7 @@ export interface Booking {
   status: BookingStatus;
   mode: BookingMode;
   vehicleId?: string;
+  vehicleName?: string; // Display name for the vehicle
   energyTarget?: number; // kWh
   cost?: number;
   createdAt?: Date | string;

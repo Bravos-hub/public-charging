@@ -17,7 +17,7 @@ export function FiltersScreen(): React.ReactElement {
   };
 
   return (
-    <div className="h-full p-4 max-w-md mx-auto">
+    <div className="w-full p-4">
       <div className="p-4 rounded-2xl border border-slate-200 bg-white grid gap-3">
         <div className="text-sm font-semibold text-slate-800">Filters</div>
         <label className="inline-flex items-center gap-2 text-[13px]">

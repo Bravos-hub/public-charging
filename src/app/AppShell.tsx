@@ -21,14 +21,14 @@ function AppContent(): React.ReactElement {
   return (
     <div className="min-h-[100dvh] bg-white text-slate-900">
       <Header title={title} />
-      <main className="max-w-md mx-auto h-[calc(100dvh-3.5rem-56px)] overflow-hidden">
+      <main className="max-w-md mx-auto h-[calc(100dvh-3.5rem-56px)] overflow-y-auto overscroll-behavior-contain">
         <AnimatePresence mode="wait">
           <motion.div
             key={route.name}
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
-            className="h-full"
+            className="min-h-full"
           >
             {route.name === 'DISCOVER' && <DiscoverScreen />}
             {route.name === 'ACTIVITY' && <ActivityScreen />}

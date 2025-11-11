@@ -11,7 +11,7 @@ export function DiscoverScreen(): React.ReactElement {
   const { push } = useNavigation();
 
   return (
-    <div className="relative h-full">
+    <div className="relative w-full" style={{ minHeight: 'calc(100dvh - 3.5rem - 56px)' }}>
       {/* Map placeholder */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-100 via-slate-50 to-white" />
 
