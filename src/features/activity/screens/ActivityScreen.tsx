@@ -97,10 +97,13 @@ interface ScheduledCardProps {
     station: string;
     dateLabel: string;
     connector: string;
+    id?: string;
   };
+  onDetails?: (item: ScheduledCardProps['item']) => void;
+  onCancel?: (item: ScheduledCardProps['item']) => void;
 }
 
-function ScheduledCard({ item }: ScheduledCardProps): React.ReactElement {
+function ScheduledCard({ item, onDetails, onCancel }: ScheduledCardProps): React.ReactElement {
   return (
     <div className="p-3 rounded-2xl border border-slate-200 bg-white">
       <div className="flex items-start justify-between">
@@ -117,12 +120,16 @@ function ScheduledCard({ item }: ScheduledCardProps): React.ReactElement {
         </div>
         <div className="grid gap-2">
           <button
-            className="h-8 px-3 rounded-lg text-white text-[12px] font-medium"
+            onClick={() => onDetails?.(item)}
+            className="h-8 px-3 rounded-lg text-white text-[12px] font-medium hover:opacity-90 transition-opacity"
             style={{ backgroundColor: EVZ_COLORS.orange }}
           >
             Details
           </button>
-          <button className="h-8 px-3 rounded-lg border border-slate-300 bg-white text-[12px] text-slate-700">
+          <button
+            onClick={() => onCancel?.(item)}
+            className="h-8 px-3 rounded-lg border border-slate-300 bg-white text-[12px] text-slate-700 hover:bg-slate-50 transition-colors"
+          >
             Cancel
           </button>
         </div>
@@ -133,32 +140,29 @@ function ScheduledCard({ item }: ScheduledCardProps): React.ReactElement {
 
 function ActivityBookingsEmbedded(): React.ReactElement {
   const { push } = useNavigation();
-  const upcomingStart = useMemo(() => Date.now() + 2 * 60 * 1000 + 15 * 1000, []);
-  const upcoming = {
-    station: 'Central Hub — Downtown Mall',
-    when: new Date(upcomingStart),
-    vehicle: 'Model X — UAX 123A',
-    connector: 'CCS2 60kW',
-  };
-  const parts = useCountdown(upcomingStart);
-  const dateLabel = useMemo(
-    () =>
-      upcoming.when.toLocaleDateString(undefined, {
-        weekday: 'short',
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-      }) +
-      ' • ' +
-      upcoming.when.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    [upcoming.when]
-  );
+  const [upcomingBooking, setUpcomingBooking] = useState<{
+    station: string;
+    when: Date;
+    vehicle: string;
+    connector: string;
+    id: string;
+  } | null>(() => {
+    const upcomingStart = Date.now() + 2 * 60 * 1000 + 15 * 1000;
+    return {
+      station: 'Central Hub — Downtown Mall',
+      when: new Date(upcomingStart),
+      vehicle: 'Model X — UAX 123A',
+      connector: 'CCS2 60kW',
+      id: 'upcoming-001',
+    };
+  });
 
-  const scheduled = useMemo(() => {
+  const [scheduledBookings, setScheduledBookings] = useState(() => {
     const base = new Date();
-    const mk = (offsetMin: number) => {
+    const mk = (offsetMin: number, id: string) => {
       const d = new Date(base.getTime() + offsetMin * 60 * 1000);
       return {
+        id,
         station: offsetMin % 2 ? 'Airport Park — Lot B' : 'City Square — Tower A',
         connector: offsetMin % 2 ? 'Type 2 22kW' : 'CCS2 60kW',
         dateLabel:
@@ -172,18 +176,71 @@ function ActivityBookingsEmbedded(): React.ReactElement {
           d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
     };
-    return [mk(180), mk(360), mk(540)];
-  }, []);
+    return [mk(180, 'scheduled-001'), mk(360, 'scheduled-002'), mk(540, 'scheduled-003')];
+  });
 
-  const firstTimeEmpty = scheduled.length === 0;
+  const upcomingStart = upcomingBooking ? upcomingBooking.when.getTime() : Date.now();
+  const parts = useCountdown(upcomingStart);
+  const dateLabel = useMemo(
+    () =>
+      upcomingBooking
+        ? upcomingBooking.when.toLocaleDateString(undefined, {
+            weekday: 'short',
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+          }) +
+          ' • ' +
+          upcomingBooking.when.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        : '',
+    [upcomingBooking]
+  );
+
+  function handleCancelUpcoming(): void {
+    if (window.confirm('Are you sure you want to cancel this upcoming booking?')) {
+      setUpcomingBooking(null);
+    }
+  }
+
+  function handleOpenDetailsUpcoming(): void {
+    if (upcomingBooking) {
+      push('BOOK_DETAIL', {
+        booking: {
+          id: upcomingBooking.id,
+          stationName: upcomingBooking.station,
+          vehicleName: upcomingBooking.vehicle,
+          connectorType: upcomingBooking.connector,
+          startTime: upcomingBooking.when,
+        },
+      });
+    }
+  }
+
+  function handleScheduledDetails(item: ScheduledCardProps['item']): void {
+    push('BOOK_DETAIL', {
+      booking: {
+        id: item.id || `booking-${item.station}`,
+        stationName: item.station,
+        connectorType: item.connector,
+      },
+    });
+  }
+
+  function handleScheduledCancel(item: ScheduledCardProps['item']): void {
+    if (window.confirm(`Are you sure you want to cancel the booking at ${item.station}?`)) {
+      setScheduledBookings((prev) => prev.filter((b) => b.id !== item.id));
+    }
+  }
+
+  const firstTimeEmpty = scheduledBookings.length === 0 && !upcomingBooking;
 
   return (
     <section className="max-w-md mx-auto px-4 py-4 pb-24">
       {/* Upcoming highlight */}
-      {!firstTimeEmpty && (
+      {upcomingBooking && (
         <div className="p-4 rounded-2xl bg-blue-600 text-white">
           <div className="text-[12px] uppercase tracking-wide opacity-90">Upcoming</div>
-          <div className="mt-1 text-[14px] font-semibold">{upcoming.station}</div>
+          <div className="mt-1 text-[14px] font-semibold">{upcomingBooking.station}</div>
           <div className="mt-1 text-[12px] opacity-90 flex items-center gap-2">
             <Clock3 className="h-4 w-4" />
             {dateLabel}
@@ -209,25 +266,38 @@ function ActivityBookingsEmbedded(): React.ReactElement {
           </div>
 
           <div className="mt-3 grid grid-cols-2 gap-2">
-            <button className="h-10 rounded-xl bg-white/10 text-white border border-white/20">
+            <button
+              onClick={handleCancelUpcoming}
+              className="h-10 rounded-xl bg-white/10 text-white border border-white/20 hover:bg-white/20 transition-colors"
+            >
               Cancel
             </button>
-            <button className="h-10 rounded-xl text-blue-700 bg-white font-medium">Open Details</button>
+            <button
+              onClick={handleOpenDetailsUpcoming}
+              className="h-10 rounded-xl text-blue-700 bg-white font-medium hover:bg-blue-50 transition-colors"
+            >
+              Open Details
+            </button>
           </div>
         </div>
       )}
 
       {/* Scheduled list OR empty state */}
-      {!firstTimeEmpty ? (
+      {scheduledBookings.length > 0 ? (
         <>
           <div className="mt-5 mb-2 text-[12px] font-semibold text-slate-600">Scheduled</div>
           <div className="space-y-3">
-            {scheduled.map((it, idx) => (
-              <ScheduledCard key={idx} item={it} />
+            {scheduledBookings.map((it) => (
+              <ScheduledCard
+                key={it.id}
+                item={it}
+                onDetails={handleScheduledDetails}
+                onCancel={handleScheduledCancel}
+              />
             ))}
           </div>
         </>
-      ) : (
+      ) : firstTimeEmpty ? (
         <div className="mt-4">
           <EmptyState
             icon={CalendarClock}
@@ -249,7 +319,7 @@ function ActivityBookingsEmbedded(): React.ReactElement {
             </div>
           </EmptyState>
         </div>
-      )}
+      ) : null}
     </section>
   );
 }

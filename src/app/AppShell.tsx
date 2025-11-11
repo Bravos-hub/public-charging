@@ -126,6 +126,50 @@ function AppContent(): React.ReactElement {
                 }}
               />
             )}
+            {route.name === 'BOOK_DETAIL' && (
+              <div className="min-h-[100dvh] bg-white p-4">
+                <div className="max-w-md mx-auto">
+                  <button onClick={back} className="mb-4 text-slate-600">
+                    ← Back
+                  </button>
+                  <h2 className="text-xl font-bold mb-4">Booking Details</h2>
+                  <div className="space-y-4">
+                    {route.params?.booking?.stationName && (
+                      <div>
+                        <div className="text-[12px] text-slate-500 mb-1">Station</div>
+                        <div className="text-[14px] font-semibold text-slate-800">
+                          {route.params.booking.stationName}
+                        </div>
+                      </div>
+                    )}
+                    {route.params?.booking?.vehicleName && (
+                      <div>
+                        <div className="text-[12px] text-slate-500 mb-1">Vehicle</div>
+                        <div className="text-[14px] font-semibold text-slate-800">
+                          {route.params.booking.vehicleName}
+                        </div>
+                      </div>
+                    )}
+                    {route.params?.booking?.connectorType && (
+                      <div>
+                        <div className="text-[12px] text-slate-500 mb-1">Connector</div>
+                        <div className="text-[14px] font-semibold text-slate-800">
+                          {route.params.booking.connectorType}
+                        </div>
+                      </div>
+                    )}
+                    {route.params?.booking?.startTime && (
+                      <div>
+                        <div className="text-[12px] text-slate-500 mb-1">Start Time</div>
+                        <div className="text-[14px] font-semibold text-slate-800">
+                          {new Date(route.params.booking.startTime).toLocaleString()}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
             {route.name === 'ACTIVATION_SCAN' && (
               <QRScanner
                 onScan={(result) => {

@@ -4,31 +4,170 @@
  */
 
 import React, { useMemo, useState } from 'react';
-import { QrCode, Filter, Layers, Crosshair, Search } from 'lucide-react';
-import { useNavigation } from '../../core';
+import { QrCode, Filter, Layers, Crosshair, Search, Star, Bolt } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigation, useApp } from '../../core';
 import { EVZ_COLORS } from '../../core/utils/constants';
 import { MapSurface, type MapMarker } from '../../features/discovery/components/MapWrapper';
-import type { Location } from '../../core/types';
+import type { Location, Station } from '../../core/types';
+
+// Sample station data with connector types and power ratings
+const ALL_STATIONS = [
+  {
+    id: 'KLA-001',
+    lat: 0.3141,
+    lng: 32.5821,
+    title: 'Central Hub',
+    status: 'available' as const,
+    connectors: ['CCS2', 'Type 2'],
+    maxPower: 60,
+  },
+  {
+    id: 'KLA-002',
+    lat: 0.3137,
+    lng: 32.5829,
+    title: 'Airport Park',
+    status: 'busy' as const,
+    connectors: ['CCS1', 'CHAdeMO'],
+    maxPower: 50,
+  },
+  {
+    id: 'KLA-003',
+    lat: 0.3152,
+    lng: 32.5815,
+    title: 'City Square',
+    status: 'offline' as const,
+    connectors: ['Type 1', 'Type 2'],
+    maxPower: 22,
+  },
+  {
+    id: 'KLA-004',
+    lat: 0.3135,
+    lng: 32.5835,
+    title: 'Downtown Mall',
+    status: 'available' as const,
+    connectors: ['CCS2', 'NACS (Tesla) DC'],
+    maxPower: 150,
+  },
+  {
+    id: 'KLA-005',
+    lat: 0.3155,
+    lng: 32.5805,
+    title: 'Business Park',
+    status: 'busy' as const,
+    connectors: ['CHAdeMO', 'GB/T DC'],
+    maxPower: 100,
+  },
+  {
+    id: 'KLA-006',
+    lat: 0.3125,
+    lng: 32.5845,
+    title: 'Tech Hub',
+    status: 'available' as const,
+    connectors: ['CCS2', 'Type 2', 'NACS (Tesla) AC'],
+    maxPower: 350,
+  },
+  {
+    id: 'KLA-007',
+    lat: 0.3165,
+    lng: 32.5855,
+    title: 'Shopping Center',
+    status: 'available' as const,
+    connectors: ['Type 2', 'GB/T AC'],
+    maxPower: 11,
+  },
+  {
+    id: 'KLA-008',
+    lat: 0.3115,
+    lng: 32.5795,
+    title: 'Residential Area',
+    status: 'available' as const,
+    connectors: ['Type 1', 'Type 2'],
+    maxPower: 7,
+  },
+];
 
 export function DiscoverScreen(): React.ReactElement {
   const { push } = useNavigation();
+  const { filters } = useApp();
   const [center] = useState<Location>({ lat: 0.314, lng: 32.582 });
   const [searchQuery, setSearchQuery] = useState('');
+  const [showStationList, setShowStationList] = useState(false);
 
-  // Generate markers with different statuses
+  // Apply filters to stations
+  const filteredStations = useMemo(() => {
+    let filtered = [...ALL_STATIONS];
+
+    // Filter by availability
+    if (filters.onlyAvail) {
+      filtered = filtered.filter((s) => s.status === 'available');
+    }
+
+    // Filter by power range
+    if (filters.minKw !== undefined || filters.maxKw !== undefined) {
+      const min = filters.minKw ?? 3;
+      const max = filters.maxKw ?? 350;
+      filtered = filtered.filter((s) => s.maxPower >= min && s.maxPower <= max);
+    }
+
+    // Filter by connector types
+    if (filters.connectorTypes && filters.connectorTypes.length > 0) {
+      filtered = filtered.filter((s) =>
+        s.connectors.some((connector) => filters.connectorTypes!.includes(connector))
+      );
+    }
+
+    return filtered;
+  }, [filters]);
+
+  // Convert to MapMarker format
   const markers = useMemo<MapMarker[]>(
-    () => [
-      { id: 'KLA-001', lat: 0.3141, lng: 32.5821, title: 'Central Hub', status: 'available' },
-      { id: 'KLA-002', lat: 0.3137, lng: 32.5829, title: 'Airport Park', status: 'busy' },
-      { id: 'KLA-003', lat: 0.3152, lng: 32.5815, title: 'City Square', status: 'offline' },
-      { id: 'KLA-004', lat: 0.3135, lng: 32.5835, title: 'Downtown Mall', status: 'available' },
-      { id: 'KLA-005', lat: 0.3155, lng: 32.5805, title: 'Business Park', status: 'busy' },
-      { id: 'KLA-006', lat: 0.3125, lng: 32.5845, title: 'Tech Hub', status: 'available' },
-    ],
-    []
+    () =>
+      filteredStations.map((s) => ({
+        id: s.id,
+        lat: s.lat,
+        lng: s.lng,
+        title: s.title,
+        status: s.status,
+      })),
+    [filteredStations]
   );
 
+  // Convert filtered stations to Station format for the list
+  const stationList = useMemo<Station[]>(() => {
+    return filteredStations.map((s, idx) => {
+      const rating = idx === 0 ? 4.6 : idx === 1 ? 4.3 : idx === 2 ? 4.1 : 4.5;
+      const availability =
+        s.status === 'available'
+          ? { total: idx === 0 ? 4 : idx === 1 ? 3 : idx === 2 ? 6 : 4, available: idx === 0 ? 2 : idx === 1 ? 1 : idx === 2 ? 3 : 2, busy: 1, offline: 0 }
+          : s.status === 'busy'
+          ? { total: 4, available: 0, busy: 3, offline: 1 }
+          : { total: 4, available: 0, busy: 0, offline: 4 };
+
+      return {
+        id: s.id,
+        name: s.title.includes('—') ? s.title : `${s.title} — ${idx === 0 ? 'Downtown Mall' : idx === 1 ? 'Lot B' : idx === 2 ? 'Tower A' : 'Location'}`,
+        location: { lat: s.lat, lng: s.lng },
+        address: `${s.title} Street, Kampala, UG`,
+        rating,
+        price: 3000,
+        connectors: s.connectors.map((type, i) => ({
+          id: `${s.id}-conn-${i}`,
+          type,
+          power: s.maxPower,
+          status: s.status === 'available' ? 'available' : s.status === 'busy' ? 'busy' : 'offline',
+        })),
+        availability,
+        amenities: [],
+        images: [],
+        open24_7: true,
+      };
+    });
+  }, [filteredStations]);
+
   function handlePinTap(marker: MapMarker): void {
+    // Find the full station data
+    const stationData = ALL_STATIONS.find((s) => s.id === marker.id);
     const station = {
       id: marker.id,
       name: marker.title,
@@ -36,7 +175,13 @@ export function DiscoverScreen(): React.ReactElement {
       address: `${marker.title} Street, Kampala, UG`,
       rating: 4.5,
       price: 3000,
-      connectors: [],
+      connectors:
+        stationData?.connectors.map((type, idx) => ({
+          id: `${marker.id}-conn-${idx}`,
+          type,
+          power: stationData.maxPower,
+          status: marker.status === 'available' ? 'available' : marker.status === 'busy' ? 'busy' : 'offline',
+        })) || [],
       availability:
         marker.status === 'available'
           ? { total: 4, available: 3, busy: 1, offline: 0 }
@@ -65,7 +210,10 @@ export function DiscoverScreen(): React.ReactElement {
 
       {/* Top Search Bar */}
       <div className="absolute top-3 left-4 right-4 z-10">
-        <button className="w-full h-11 rounded-xl px-4 bg-white shadow border border-slate-200 text-left text-[13px] text-slate-600 hover:bg-slate-50 transition-colors">
+        <button
+          onClick={() => setShowStationList(true)}
+          className="w-full h-11 rounded-xl px-4 bg-white shadow border border-slate-200 text-left text-[13px] text-slate-600 hover:bg-slate-50 transition-colors"
+        >
           Search this area
         </button>
       </div>
@@ -142,6 +290,80 @@ export function DiscoverScreen(): React.ReactElement {
           />
         </div>
       </div>
+
+      {/* Station List Bottom Sheet */}
+      <AnimatePresence>
+        {showStationList && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowStationList(false)}
+              className="fixed inset-0 bg-black/40 z-40"
+            />
+            {/* Sheet */}
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              className="fixed inset-x-0 bottom-0 z-40 bg-white rounded-t-3xl shadow-xl max-h-[85vh] overflow-hidden"
+            >
+              {/* Handle */}
+              <div
+                className="py-3 grid place-items-center cursor-pointer"
+                onClick={() => setShowStationList(false)}
+              >
+                <div className="h-1.5 w-12 rounded-full bg-slate-300" />
+              </div>
+              {/* Content */}
+              <div className="px-4 pb-24 overflow-y-auto max-h-[calc(85vh-3rem)]">
+                <div className="space-y-3">
+                  {stationList.map((station, idx) => {
+                    const distance = idx === 0 ? '0.8 km' : idx === 1 ? '4.2 km' : idx === 2 ? '6.5 km' : `${(idx + 1) * 2.5} km`;
+                    const availText = `${station.availability.available}/${station.availability.total}`;
+                    const primaryConnector = station.connectors[0];
+                    return (
+                      <button
+                        key={station.id}
+                        onClick={() => {
+                          setShowStationList(false);
+                          push('STATION_DETAILS', { station, stationId: station.id });
+                        }}
+                        className="w-full p-3 rounded-2xl border border-slate-200 bg-white text-left hover:shadow-md transition-shadow"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0 flex-1">
+                            <div className="text-[13px] font-semibold text-slate-800 truncate">
+                              {station.name}
+                            </div>
+                            <div className="mt-0.5 text-[11px] text-slate-600 flex items-center gap-3">
+                              <span>{distance}</span>
+                              <span className="inline-flex items-center gap-1">
+                                <Star className="h-3.5 w-3.5 text-amber-400 fill-amber-400" />{' '}
+                                {station.rating.toFixed(1)}
+                              </span>
+                              <span>{availText} Available</span>
+                            </div>
+                            {primaryConnector && (
+                              <div className="mt-2 text-[11px] text-slate-700 flex items-center gap-1">
+                                <Bolt className="h-3.5 w-3.5" />
+                                {primaryConnector.type} • {primaryConnector.power}kW
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -55,6 +55,9 @@ export function AppProvider({ children }: AppProviderProps): React.ReactElement 
   const [filters, setFilters] = useState<StationFilters>({
     onlyAvail: true,
     fastOnly: false,
+    minKw: 3,
+    maxKw: 350,
+    connectorTypes: ['CCS2', 'Type 2'],
   });
   const [bookingDraft, setBookingDraft] = useState<BookingDraft | null>(null);
   const [mobileDraft, setMobileDraft] = useState<BookingDraft | null>(null);
