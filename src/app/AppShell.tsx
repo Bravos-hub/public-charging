@@ -23,6 +23,10 @@ import { QRScanner } from '../features/charging/components/QRScanner';
 import { ChargingReadyScreen } from '../features/charging/screens/ChargingReadyScreen';
 import { ChargingInProgressScreen } from '../features/charging/screens/ChargingInProgressScreen';
 import { ChargingCompleteScreen } from '../features/charging/screens/ChargingCompleteScreen';
+import { ChooseConnectorScreen } from '../features/charging/screens/ChooseConnectorScreen';
+import { EnterChargerIdScreen } from '../features/charging/screens/EnterChargerIdScreen';
+import { PrepaidChargingScreen } from '../features/charging/screens/PrepaidChargingScreen';
+import { PostpaidPaymentScreen } from '../features/charging/screens/PostpaidPaymentScreen';
 import { ConnectorTypesFilter, PowerFilter, NetworksFilter, LocationTypesFilter, AccessFilter, UserRatingFilter, MultipleDevicesFilter, StationCategoryFilter } from '../shared/components/filters';
 
 // Routes that should be full-screen (no header/bottom nav)
@@ -37,9 +41,11 @@ const FULL_SCREEN_ROUTES = new Set([
   'ACTIVATION_SCAN',
   'ACTIVATION_ENTER_ID',
   'ACTIVATION_CHOOSE_CONNECTOR',
+  'PREPAID_CHARGING',
   'CHARGING_READY',
   'CHARGING_IN_PROGRESS',
   'CHARGING_COMPLETE',
+  'POSTPAID_PAYMENT',
   'CHARGING_STOP',
   'WALLET_ADD_METHOD',
   'WALLET_TRANSACTIONS',
@@ -187,61 +193,20 @@ function AppContent(): React.ReactElement {
             {route.name === 'ACTIVATION_SCAN' && (
               <QRScanner
                 onScan={(result) => {
-                  push('CHARGING_READY', { scanResult: result });
+                  push('PREPAID_CHARGING', {
+                    ...route.params,
+                    scanResult: result,
+                  });
                 }}
                 onEnterId={() => {
-                  push('ACTIVATION_ENTER_ID');
+                  push('ACTIVATION_ENTER_ID', route.params);
                 }}
                 onBack={back}
               />
             )}
-            {route.name === 'ACTIVATION_ENTER_ID' && (
-              <div className="min-h-[100dvh] bg-white p-4">
-                <div className="max-w-md mx-auto">
-                  <button onClick={back} className="mb-4 text-slate-600">
-                    ← Back
-                  </button>
-                  <h2 className="text-xl font-bold mb-4">Enter Charger ID</h2>
-                  <input
-                    type="text"
-                    placeholder="Enter charger ID"
-                    className="w-full p-3 border rounded-xl mb-4"
-                  />
-                  <button
-                    onClick={() => {
-                      push('CHARGING_READY', { chargerId: 'MANUAL-001' });
-                    }}
-                    className="w-full p-3 rounded-xl text-white font-medium"
-                    style={{ backgroundColor: '#f77f00' }}
-                  >
-                    Continue
-                  </button>
-                </div>
-              </div>
-            )}
-            {route.name === 'ACTIVATION_CHOOSE_CONNECTOR' && (
-              <div className="min-h-[100dvh] bg-white p-4">
-                <div className="max-w-md mx-auto">
-                  <button onClick={back} className="mb-4 text-slate-600">
-                    ← Back
-                  </button>
-                  <h2 className="text-xl font-bold mb-4">Choose Connector</h2>
-                  <div className="space-y-2">
-                    {['CCS2', 'CHAdeMO', 'Type 2'].map((type) => (
-                      <button
-                        key={type}
-                        onClick={() => {
-                          push('CHARGING_READY', { connectorType: type });
-                        }}
-                        className="w-full p-4 border rounded-xl text-left"
-                      >
-                        {type}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
+            {route.name === 'ACTIVATION_ENTER_ID' && <EnterChargerIdScreen />}
+            {route.name === 'ACTIVATION_CHOOSE_CONNECTOR' && <ChooseConnectorScreen />}
+            {route.name === 'PREPAID_CHARGING' && <PrepaidChargingScreen />}
             {route.name === 'CHARGING_READY' && (
               <ChargingReadyScreen
                 onStart={() => {
@@ -254,7 +219,22 @@ function AppContent(): React.ReactElement {
               <ChargingInProgressScreen
                 sessionId={route.params?.sessionId}
                 onStop={() => {
-                  push('CHARGING_STOP', route.params);
+                  // Create session object from route params
+                  const session = {
+                    id: route.params?.sessionId || `SESSION-${Date.now()}`,
+                    stationId: route.params?.stationId || route.params?.station?.id || '1',
+                    connectorId: route.params?.connector?.id || route.params?.connectorType || '1',
+                    startTime: new Date(),
+                    endTime: new Date(),
+                    energyDelivered: 32.8, // Would come from actual charging data
+                    cost: 98400, // Would be calculated
+                    status: 'completed' as const,
+                    power: route.params?.connector?.power || 60,
+                  };
+                  push('CHARGING_COMPLETE', {
+                    ...route.params,
+                    session,
+                  });
                 }}
                 onBack={back}
               />
@@ -266,36 +246,11 @@ function AppContent(): React.ReactElement {
                   replace('ACTIVITY');
                 }}
                 onProceedToPayment={() => {
-                  // Navigate to payment if needed
-                  replace('ACTIVITY');
+                  push('POSTPAID_PAYMENT', route.params);
                 }}
               />
             )}
-            {route.name === 'CHARGING_STOP' && (
-              <div className="min-h-[100dvh] bg-white p-4">
-                <div className="max-w-md mx-auto text-center">
-                  <h2 className="text-xl font-bold mb-4">Stop Charging?</h2>
-                  <p className="text-slate-600 mb-6">Are you sure you want to stop charging?</p>
-                  <div className="space-y-2">
-                    <button
-                      onClick={() => {
-                        push('CHARGING_COMPLETE', route.params);
-                      }}
-                      className="w-full p-3 rounded-xl text-white font-medium"
-                      style={{ backgroundColor: '#f77f00' }}
-                    >
-                      Yes, Stop
-                    </button>
-                    <button
-                      onClick={back}
-                      className="w-full p-3 rounded-xl border border-slate-300"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
+            {route.name === 'POSTPAID_PAYMENT' && <PostpaidPaymentScreen />}
             {route.name === 'WALLET_ADD_METHOD' && (
               <div className="min-h-[100dvh] bg-white p-4">
                 <div className="max-w-md mx-auto">

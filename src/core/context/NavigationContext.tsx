@@ -41,12 +41,14 @@ export const ROUTES = {
   BOOK_DETAIL: { title: 'Booking Details' },
   
   // Charging flows
-  ACTIVATION_SCAN: { title: 'Scan QR Code' },
-  ACTIVATION_ENTER_ID: { title: 'Enter Charger ID' },
-  ACTIVATION_CHOOSE_CONNECTOR: { title: 'Choose Connector' },
+  ACTIVATION_SCAN: { title: 'Activate — Scan QR' },
+  ACTIVATION_ENTER_ID: { title: 'Activate — Enter ID' },
+  ACTIVATION_CHOOSE_CONNECTOR: { title: 'Activate — Choose Connector' },
+  PREPAID_CHARGING: { title: 'Prepaid — Fixed Charging' },
   CHARGING_READY: { title: 'Charging Ready' },
   CHARGING_IN_PROGRESS: { title: 'Charging' },
   CHARGING_COMPLETE: { title: 'Charging Complete' },
+  POSTPAID_PAYMENT: { title: 'Payment — Fixed (Postpaid)' },
   CHARGING_STOP: { title: 'Stop Charging' },
   
   // Wallet flows

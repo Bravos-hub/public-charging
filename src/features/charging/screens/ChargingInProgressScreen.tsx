@@ -3,8 +3,9 @@
  */
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { ArrowLeft, Zap, Gauge, Clock3, Fuel } from 'lucide-react';
+import { ArrowLeft, Zap, Gauge, Clock3, Fuel, AlertTriangle } from 'lucide-react';
 import { EVZ_COLORS } from '../../../core/utils/constants';
+import { motion, AnimatePresence } from 'framer-motion';
 
 function formatDuration(ms: number): string {
   const sec = Math.floor(ms / 1000);
@@ -29,6 +30,7 @@ export function ChargingInProgressScreen({
   const [start] = useState(() => Date.now() - 12 * 60 * 1000); // started 12m ago
   const [percent, setPercent] = useState(27);
   const [energyKwh, setEnergyKwh] = useState(5.4);
+  const [showStopConfirmation, setShowStopConfirmation] = useState(false);
   const pricePerKwh = 3000;
 
   useEffect(() => {
@@ -111,13 +113,69 @@ export function ChargingInProgressScreen({
             <button
               className="h-10 px-6 rounded-full text-white font-medium inline-flex items-center gap-2"
               style={{ backgroundColor: EVZ_COLORS.orange }}
-              onClick={onStop}
+              onClick={() => setShowStopConfirmation(true)}
             >
               <Zap className="h-4 w-4" /> Swipe to End Session
             </button>
           </div>
         </div>
       </main>
+
+      {/* Stop Confirmation Modal */}
+      <AnimatePresence>
+        {showStopConfirmation && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowStopConfirmation(false)}
+              className="fixed inset-0 z-50 bg-black/40"
+            />
+            {/* Modal */}
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              className="fixed inset-x-0 bottom-0 z-50 pointer-events-none"
+            >
+              <div className="max-w-md mx-auto p-4 pointer-events-auto">
+                <div className="rounded-2xl bg-white shadow-xl border border-slate-200 p-4">
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />
+                    <div className="flex-1">
+                      <div className="text-[14px] font-semibold text-slate-800">End charging session?</div>
+                      <div className="text-[12px] text-slate-600 mt-1">
+                        You can resume later, but the connector may become unavailable if others are waiting.
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-4 grid grid-cols-2 gap-2">
+                    <button
+                      className="h-10 rounded-lg border border-slate-300 bg-white text-slate-700 font-medium hover:bg-slate-50 transition-colors"
+                      onClick={() => setShowStopConfirmation(false)}
+                    >
+                      Keep Charging
+                    </button>
+                    <button
+                      className="h-10 rounded-lg text-white font-medium hover:opacity-90 transition-opacity"
+                      style={{ backgroundColor: EVZ_COLORS.orange }}
+                      onClick={() => {
+                        setShowStopConfirmation(false);
+                        onStop?.();
+                      }}
+                    >
+                      Stop Charging
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
