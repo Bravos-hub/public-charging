@@ -13,7 +13,9 @@ import { ActivityScreen } from './screens/ActivityScreen';
 import { WalletScreen } from './screens/WalletScreen';
 import { ProfileScreen } from './screens/ProfileScreen';
 import { FiltersScreen } from './screens/FiltersScreen';
+import { StationPreviewScreen } from './screens/StationPreviewScreen';
 import { StationDetailsScreen } from './screens/StationDetailsScreen';
+import { EnableLocationScreen } from './screens/EnableLocationScreen';
 import { TimePicker } from '../features/booking/components/TimePicker';
 import { BookingPaymentScreen } from '../features/booking/screens/BookingPaymentScreen';
 import { BookingConfirmationScreen } from '../features/booking/screens/BookingConfirmationScreen';
@@ -21,9 +23,11 @@ import { QRScanner } from '../features/charging/components/QRScanner';
 import { ChargingReadyScreen } from '../features/charging/screens/ChargingReadyScreen';
 import { ChargingInProgressScreen } from '../features/charging/screens/ChargingInProgressScreen';
 import { ChargingCompleteScreen } from '../features/charging/screens/ChargingCompleteScreen';
+import { ConnectorTypesFilter, PowerFilter, NetworksFilter, LocationTypesFilter, AccessFilter, UserRatingFilter, MultipleDevicesFilter, StationCategoryFilter } from '../shared/components/filters';
 
 // Routes that should be full-screen (no header/bottom nav)
 const FULL_SCREEN_ROUTES = new Set([
+  'STATION_PREVIEW',
   'STATION_DETAILS',
   'BOOK_FIXED_TIME',
   'BOOK_MOBILE_TIME',
@@ -42,6 +46,15 @@ const FULL_SCREEN_ROUTES = new Set([
   'PROFILE_SETTINGS',
   'PROFILE_NOTIFICATIONS',
   'PROFILE_LANGUAGE',
+  'ENABLE_LOCATION',
+  'FILTER_CONNECTOR_TYPES',
+  'FILTER_POWER',
+  'FILTER_NETWORKS',
+  'FILTER_LOCATION_TYPES',
+  'FILTER_ACCESS',
+  'FILTER_USER_RATING',
+  'FILTER_MULTIPLE_DEVICES',
+  'FILTER_STATION_CATEGORY',
 ]);
 
 function AppContent(): React.ReactElement {
@@ -62,6 +75,7 @@ function AppContent(): React.ReactElement {
             exit={{ opacity: 0, x: -20 }}
             className="min-h-full"
           >
+            {route.name === 'STATION_PREVIEW' && <StationPreviewScreen />}
             {route.name === 'STATION_DETAILS' && <StationDetailsScreen />}
             {route.name === 'BOOK_FIXED_TIME' && (
               <TimePicker
@@ -337,6 +351,15 @@ function AppContent(): React.ReactElement {
                 </div>
               </div>
             )}
+            {route.name === 'ENABLE_LOCATION' && <EnableLocationScreen />}
+            {route.name === 'FILTER_CONNECTOR_TYPES' && <ConnectorTypesFilter />}
+            {route.name === 'FILTER_POWER' && <PowerFilter />}
+            {route.name === 'FILTER_NETWORKS' && <NetworksFilter />}
+            {route.name === 'FILTER_LOCATION_TYPES' && <LocationTypesFilter />}
+            {route.name === 'FILTER_ACCESS' && <AccessFilter />}
+            {route.name === 'FILTER_USER_RATING' && <UserRatingFilter />}
+            {route.name === 'FILTER_MULTIPLE_DEVICES' && <MultipleDevicesFilter />}
+            {route.name === 'FILTER_STATION_CATEGORY' && <StationCategoryFilter />}
           </motion.div>
         </AnimatePresence>
       </div>

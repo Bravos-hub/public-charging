@@ -43,14 +43,21 @@ export function StationDetailsScreen(): React.ReactElement {
     push('ACTIVATION_SCAN', { stationId: station.id });
   }
 
+  function handleReserve(connector: typeof station.connectors[0]): void {
+    push('BOOK_FIXED_TIME', { stationId: station.id, station, connector });
+  }
+
   if (activeTab === 'chargers') {
     return (
       <ChargersList
-        connectors={station.connectors}
+        connectors={station.connectors.length > 0 ? station.connectors : [
+          { id: 'EVZ-DC-01', type: 'CCS2', power: 60, status: 'available', price: 3000 },
+          { id: 'EVZ-DC-02', type: 'CCS2', power: 60, status: 'busy', price: 3000 },
+          { id: 'EVZ-AC-03', type: 'Type2', power: 22, status: 'available', price: 1800 },
+        ]}
         onBack={() => setActiveTab('overview')}
-        onReserve={(connector) => {
-          // Handle reservation
-        }}
+        onReserve={handleReserve}
+        onTabChange={setActiveTab}
       />
     );
   }
@@ -60,6 +67,7 @@ export function StationDetailsScreen(): React.ReactElement {
       <AmenitiesList
         amenities={station.amenities}
         onBack={() => setActiveTab('overview')}
+        onTabChange={setActiveTab}
       />
     );
   }
@@ -71,6 +79,7 @@ export function StationDetailsScreen(): React.ReactElement {
       onNavigate={handleNavigate}
       onBook={handleBook}
       onStartNow={handleStartNow}
+      onTabChange={setActiveTab}
     />
   );
 }

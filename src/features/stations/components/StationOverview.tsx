@@ -63,6 +63,7 @@ interface StationOverviewProps {
   onNavigate?: () => void;
   onBook?: () => void;
   onStartNow?: () => void;
+  onTabChange?: (tab: 'overview' | 'chargers' | 'amenities') => void;
 }
 
 export function StationOverview({
@@ -71,6 +72,7 @@ export function StationOverview({
   onNavigate,
   onBook,
   onStartNow,
+  onTabChange,
 }: StationOverviewProps): React.ReactElement {
   const defaultStation: Station = {
     id: '1',
@@ -142,9 +144,24 @@ export function StationOverview({
         {/* Segmented tabs */}
         <div className="px-4 pt-3">
           <div className="grid grid-cols-3 rounded-xl bg-slate-100 p-1 text-[12px]">
-            <button className="h-9 rounded-lg bg-white shadow font-semibold">Overview</button>
-            <button className="h-9 rounded-lg text-slate-600">Chargers</button>
-            <button className="h-9 rounded-lg text-slate-600">Amenities/Chat</button>
+            <button 
+              className="h-9 rounded-lg bg-white shadow font-semibold"
+              onClick={() => onTabChange?.('overview')}
+            >
+              Overview
+            </button>
+            <button 
+              className="h-9 rounded-lg text-slate-600"
+              onClick={() => onTabChange?.('chargers')}
+            >
+              Chargers
+            </button>
+            <button 
+              className="h-9 rounded-lg text-slate-600"
+              onClick={() => onTabChange?.('amenities')}
+            >
+              Amenities/Chat
+            </button>
           </div>
         </div>
 

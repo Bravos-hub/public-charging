@@ -2,18 +2,46 @@
  * Filters Screen (TypeScript)
  */
 
-import React, { useState, useEffect } from 'react';
-import { Filter } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { ArrowLeft, PlugZap, Gauge, Building2, MapPin, Users, Layers, Star, CheckSquare, Filter } from 'lucide-react';
 import { EVZ_COLORS } from '../../core/utils/constants';
 import { useNavigation, useApp } from '../../core';
 
-const DC_CONNECTORS = ['CCS1', 'CCS2', 'CHAdeMO', 'GB/T DC', 'NACS (Tesla) DC'] as const;
-const AC_CONNECTORS = ['Type 1', 'Type 2', 'GB/T AC', 'NACS (Tesla) AC'] as const;
+interface FilterRowProps {
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  subtitle?: string;
+  count: number | string;
+  onClick?: () => void;
+}
+
+function FilterRow({ icon: Icon, title, subtitle, count, onClick }: FilterRowProps): React.ReactElement {
+  return (
+    <button
+      onClick={onClick}
+      className="w-full p-3 rounded-2xl border border-slate-200 bg-white flex items-center justify-between hover:bg-slate-50 transition-colors"
+    >
+      <div className="flex items-center gap-3 text-left">
+        <div className="h-9 w-9 rounded-xl bg-slate-100 grid place-items-center text-slate-700 flex-shrink-0">
+          <Icon className="h-4 w-4" />
+        </div>
+        <div className="min-w-0">
+          <div className="text-[13px] font-semibold text-slate-800">{title}</div>
+          {subtitle && <div className="text-[11px] text-slate-500 mt-0.5">{subtitle}</div>}
+        </div>
+      </div>
+      <div className="text-[11px] text-slate-500 ml-2 flex-shrink-0">
+        {typeof count === 'number' ? `${count} selected` : count || ''}
+      </div>
+    </button>
+  );
+}
 
 export function FiltersScreen(): React.ReactElement {
-  const { replace } = useNavigation();
+  const { back, replace, push } = useNavigation();
   const { filters, setFilters } = useApp();
   const [onlyAvail, setOnlyAvail] = useState(filters.onlyAvail ?? true);
+  const [fastOnly, setFastOnly] = useState(filters.fastOnly ?? false);
   const [minKw, setMinKw] = useState(filters.minKw ?? 3);
   const [maxKw, setMaxKw] = useState(filters.maxKw ?? 350);
   const [sel, setSel] = useState<string[]>(filters.connectorTypes ?? ['CCS2', 'Type 2']);
@@ -21,199 +49,198 @@ export function FiltersScreen(): React.ReactElement {
   // Sync with global filters when they change externally
   useEffect(() => {
     setOnlyAvail(filters.onlyAvail ?? true);
+    setFastOnly(filters.fastOnly ?? false);
     setMinKw(filters.minKw ?? 3);
     setMaxKw(filters.maxKw ?? 350);
     setSel(filters.connectorTypes ?? ['CCS2', 'Type 2']);
   }, [filters]);
 
-  const toggle = (x: string): void => {
-    setSel((xs) => (xs.includes(x) ? xs.filter((v) => v !== x) : [...xs, x]));
-  };
+  // Calculate filter counts
+  const filterCounts = useMemo(() => {
+    return {
+      connectors: sel.length,
+      power: `${minKw}–${maxKw} kW`,
+      networks: filters.networks?.length || 0,
+      location: filters.locationTypes?.length || 0,
+      access: filters.access?.length || 0,
+      rating: filters.userRating ? 1 : 0,
+      devices: filters.multipleDevices ? 1 : 0,
+      category: filters.category ? 1 : 0,
+    };
+  }, [sel, minKw, maxKw, filters]);
+
+  function handleClearAll(): void {
+    setOnlyAvail(false);
+    setFastOnly(false);
+    setMinKw(3);
+    setMaxKw(350);
+    setSel([]);
+    const clearedFilters = {
+      onlyAvail: false,
+      fastOnly: false,
+      minKw: 3,
+      maxKw: 350,
+      connectorTypes: [],
+      networks: [],
+      locationTypes: [],
+      access: [],
+      userRating: undefined,
+      multipleDevices: undefined,
+      category: undefined,
+    };
+    setFilters(clearedFilters);
+  }
+
+  function handleApplyFilters(): void {
+    setFilters({
+      onlyAvail,
+      fastOnly,
+      minKw,
+      maxKw,
+      connectorTypes: sel,
+      networks: filters.networks,
+      locationTypes: filters.locationTypes,
+      access: filters.access,
+      userRating: filters.userRating,
+      multipleDevices: filters.multipleDevices,
+      category: filters.category,
+    });
+    replace('DISCOVER');
+  }
 
   return (
-    <div className="w-full">
-      {/* Green Header */}
-      <div
-        className="sticky top-0 z-10 w-full"
-        style={{ backgroundColor: EVZ_COLORS.green }}
-      >
+    <div className="min-h-[100dvh] bg-white text-slate-900">
+      {/* Header */}
+      <div className="sticky top-0 z-10 w-full" style={{ backgroundColor: EVZ_COLORS.green }}>
         <div className="max-w-md mx-auto h-14 px-4 flex items-center justify-between text-white">
-          <div className="flex items-center gap-2">
-            <Filter className="h-5 w-5" />
-            <span className="font-semibold">Filters</span>
-          </div>
+          <button aria-label="Back" onClick={back}>
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+          <span className="font-semibold">Filters</span>
+          <div className="w-5" />
         </div>
       </div>
 
-      {/* Filter Content */}
-      <div className="w-full p-4">
-        <div className="p-4 rounded-2xl border border-slate-200 bg-white shadow-sm grid gap-4">
-
-        {/* Availability Checkbox */}
-        <label className="inline-flex items-center gap-2 text-[13px] text-slate-700 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={onlyAvail}
-            onChange={(e) => setOnlyAvail(e.target.checked)}
-            className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0"
-          />
-          Only show available
-        </label>
-
-        {/* Power Range */}
-        <div>
-          <div className="text-[12px] text-slate-600 mb-2">
-            Power (kW): {minKw} – {maxKw} kW
-          </div>
-          <div className="relative">
-            {/* Min/Max Labels */}
-            <div className="flex justify-between text-[11px] text-slate-500 mb-1">
-              <span>Min</span>
-              <span>Max</span>
-            </div>
-            {/* Dual range slider container */}
-            <div className="relative h-2 bg-slate-200 rounded-full">
-              {/* Active range track */}
-              <div
-                className="absolute h-2 bg-blue-600 rounded-full"
-                style={{
-                  left: `${((minKw - 3) / (350 - 3)) * 100}%`,
-                  width: `${((maxKw - minKw) / (350 - 3)) * 100}%`,
-                }}
-              />
-              {/* Min slider */}
-              <input
-                type="range"
-                min={3}
-                max={350}
-                value={minKw}
-                onChange={(e) => {
-                  const val = parseInt(e.target.value, 10);
-                  setMinKw(Math.min(val, maxKw - 1));
-                }}
-                className="absolute top-0 left-0 w-full h-2 opacity-0 cursor-pointer z-10"
-                style={{ zIndex: minKw > maxKw - 10 ? 5 : 10 }}
-              />
-              {/* Max slider */}
-              <input
-                type="range"
-                min={3}
-                max={350}
-                value={maxKw}
-                onChange={(e) => {
-                  const val = parseInt(e.target.value, 10);
-                  setMaxKw(Math.max(val, minKw + 1));
-                }}
-                className="absolute top-0 left-0 w-full h-2 opacity-0 cursor-pointer z-10"
-                style={{ zIndex: maxKw < minKw + 10 ? 5 : 10 }}
-              />
-            </div>
-            {/* Slider handles (visual) */}
-            <div className="relative -mt-2">
-              <div
-                className="absolute w-4 h-4 bg-blue-600 rounded-full border-2 border-white shadow-md transform -translate-x-1/2"
-                style={{ left: `${((minKw - 3) / (350 - 3)) * 100}%` }}
-              />
-              <div
-                className="absolute w-4 h-4 bg-blue-600 rounded-full border-2 border-white shadow-md transform -translate-x-1/2"
-                style={{ left: `${((maxKw - 3) / (350 - 3)) * 100}%` }}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Connector Types */}
-        <div>
-          <div className="text-[12px] text-slate-600 mb-2">Connector types</div>
-          
-          {/* DC Connectors */}
-          <div className="mb-3">
-            <div className="text-[11px] font-medium text-slate-700 mb-2">DC</div>
-            <div className="flex flex-wrap gap-2">
-              {DC_CONNECTORS.map((c) => {
-                const isSelected = sel.includes(c);
-                return (
-                  <button
-                    key={c}
-                    onClick={() => toggle(c)}
-                    className={`px-3 py-1.5 rounded-lg border text-[12px] font-medium transition-all ${
-                      isSelected
-                        ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-                        : 'bg-slate-100 text-slate-700 border-slate-300 hover:border-slate-400'
-                    }`}
-                  >
-                    {c}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* AC Connectors */}
-          <div>
-            <div className="text-[11px] font-medium text-slate-700 mb-2">AC</div>
-            <div className="flex flex-wrap gap-2">
-              {AC_CONNECTORS.map((c) => {
-                const isSelected = sel.includes(c);
-                return (
-                  <button
-                    key={c}
-                    onClick={() => toggle(c)}
-                    className={`px-3 py-1.5 rounded-lg border text-[12px] font-medium transition-all ${
-                      isSelected
-                        ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-                        : 'bg-slate-100 text-slate-700 border-slate-300 hover:border-slate-400'
-                    }`}
-                  >
-                    {c}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="grid grid-cols-2 gap-3 pt-2">
+      <main className="max-w-md mx-auto px-4 py-3 pb-28">
+        {/* Quick toggles */}
+        <div className="grid grid-cols-2 gap-3">
           <button
-            onClick={() => {
-              const clearedFilters = {
-                onlyAvail: false,
-                minKw: 3,
-                maxKw: 350,
-                connectorTypes: [],
-              };
-              setOnlyAvail(false);
-              setMinKw(3);
-              setMaxKw(350);
-              setSel([]);
-              // Also clear global filters
-              setFilters(clearedFilters);
-            }}
-            className="h-11 rounded-xl border border-slate-300 bg-white text-slate-700 font-medium hover:bg-slate-50 transition-colors"
+            onClick={() => setOnlyAvail((v) => !v)}
+            className={`h-11 rounded-xl border text-[13px] font-medium flex items-center justify-center gap-2 transition-colors ${
+              onlyAvail
+                ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                : 'bg-white border-slate-300 text-slate-700'
+            }`}
           >
-            Clear
+            <CheckSquare className={`h-4 w-4 ${onlyAvail ? 'text-emerald-600' : 'text-slate-600'}`} />
+            Only show available
           </button>
           <button
+            onClick={() => setFastOnly((v) => !v)}
+            className={`h-11 rounded-xl border text-[13px] font-medium flex items-center justify-center gap-2 transition-colors ${
+              fastOnly
+                ? 'bg-amber-50 border-amber-200 text-amber-800'
+                : 'bg-white border-slate-300 text-slate-700'
+            }`}
+          >
+            <Gauge className={`h-4 w-4 ${fastOnly ? 'text-amber-600' : 'text-slate-600'}`} />
+            Fast chargers only
+          </button>
+        </div>
+
+        {/* Filter sections */}
+        <div className="mt-4 grid gap-3">
+          <FilterRow
+            icon={PlugZap}
+            title="Connector Types"
+            subtitle="CCS2, CHAdeMO, Type2, NACS…"
+            count={filterCounts.connectors}
             onClick={() => {
-              // Save filters to global state
-              setFilters({
-                onlyAvail,
-                minKw,
-                maxKw,
-                connectorTypes: sel,
-              });
-              // Apply filters and navigate back to Discover
-              replace('DISCOVER');
+              push('FILTER_CONNECTOR_TYPES');
             }}
+          />
+          <FilterRow
+            icon={Gauge}
+            title="Power (kW)"
+            subtitle="Min–Max"
+            count={filterCounts.power}
+            onClick={() => {
+              push('FILTER_POWER');
+            }}
+          />
+          <FilterRow
+            icon={Layers}
+            title="Networks"
+            subtitle="EVzone, partners"
+            count={filterCounts.networks}
+            onClick={() => {
+              push('FILTER_NETWORKS');
+            }}
+          />
+          <FilterRow
+            icon={Building2}
+            title="Location Types"
+            subtitle="Mall, On‑street, Parking…"
+            count={filterCounts.location}
+            onClick={() => {
+              push('FILTER_LOCATION_TYPES');
+            }}
+          />
+          <FilterRow
+            icon={MapPin}
+            title="Access"
+            subtitle="24/7, Public, No restrictions, Taxi only"
+            count={filterCounts.access}
+            onClick={() => {
+              push('FILTER_ACCESS');
+            }}
+          />
+          <FilterRow
+            icon={Star}
+            title="User Rating"
+            subtitle="≥2★, ≥3★, ≥4★"
+            count={filterCounts.rating}
+            onClick={() => {
+              push('FILTER_USER_RATING');
+            }}
+          />
+          <FilterRow
+            icon={Users}
+            title="Multiple Devices"
+            subtitle="Min. stalls at site"
+            count={filterCounts.devices}
+            onClick={() => {
+              push('FILTER_MULTIPLE_DEVICES');
+            }}
+          />
+          <FilterRow
+            icon={Filter}
+            title="Station Category"
+            subtitle="Public / Corporate / Residential"
+            count={filterCounts.category}
+            onClick={() => {
+              push('FILTER_STATION_CATEGORY');
+            }}
+          />
+        </div>
+
+        {/* Action buttons */}
+        <div className="mt-5 grid grid-cols-2 gap-3">
+          <button
+            onClick={handleClearAll}
+            className="h-11 rounded-xl border border-slate-300 bg-white text-slate-700 font-medium hover:bg-slate-50 transition-colors"
+          >
+            Clear All
+          </button>
+          <button
+            onClick={handleApplyFilters}
             className="h-11 rounded-xl text-white font-medium hover:opacity-90 transition-opacity"
             style={{ backgroundColor: EVZ_COLORS.orange }}
           >
             Apply Filters
           </button>
         </div>
-        </div>
-      </div>
+      </main>
     </div>
   );
 }

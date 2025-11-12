@@ -4,7 +4,7 @@
  */
 
 import React, { useMemo, useState } from 'react';
-import { QrCode, Filter, Layers, Crosshair, Search, Star, Bolt } from 'lucide-react';
+import { QrCode, Filter, Layers, Crosshair, Search, Star, Bolt, MapPin, Navigation2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigation, useApp } from '../../core';
 import { EVZ_COLORS } from '../../core/utils/constants';
@@ -93,6 +93,7 @@ export function DiscoverScreen(): React.ReactElement {
   const [center] = useState<Location>({ lat: 0.314, lng: 32.582 });
   const [searchQuery, setSearchQuery] = useState('');
   const [showStationList, setShowStationList] = useState(false);
+  const [selectedStation, setSelectedStation] = useState<{ station: Station; distance: string } | null>(null);
 
   // Apply filters to stations
   const filteredStations = useMemo(() => {
@@ -180,7 +181,7 @@ export function DiscoverScreen(): React.ReactElement {
           id: `${marker.id}-conn-${idx}`,
           type,
           power: stationData.maxPower,
-          status: marker.status === 'available' ? 'available' : marker.status === 'busy' ? 'busy' : 'offline',
+          status: (marker.status === 'available' ? 'available' : marker.status === 'busy' ? 'busy' : 'offline') as 'available' | 'busy' | 'offline' | 'maintenance',
         })) || [],
       availability:
         marker.status === 'available'
@@ -192,7 +193,7 @@ export function DiscoverScreen(): React.ReactElement {
       images: [],
       open24_7: true,
     };
-    push('STATION_DETAILS', { station, stationId: marker.id });
+    setSelectedStation({ station, distance: '0.8 km' });
   }
 
   function handleLocateMe(): void {
@@ -330,7 +331,7 @@ export function DiscoverScreen(): React.ReactElement {
                         key={station.id}
                         onClick={() => {
                           setShowStationList(false);
-                          push('STATION_DETAILS', { station, stationId: station.id });
+                          setSelectedStation({ station, distance });
                         }}
                         className="w-full p-3 rounded-2xl border border-slate-200 bg-white text-left hover:shadow-md transition-shadow"
                       >
@@ -358,6 +359,106 @@ export function DiscoverScreen(): React.ReactElement {
                       </button>
                     );
                   })}
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Station Preview Overlay */}
+      <AnimatePresence>
+        {selectedStation && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedStation(null)}
+              className="fixed inset-0 bg-black/40 z-50"
+            />
+            {/* Preview Card */}
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              className="fixed inset-x-0 bottom-0 z-50 pointer-events-none"
+              style={{ paddingBottom: '56px' }}
+            >
+              <div className="max-w-md mx-auto px-4 pb-4">
+                <div className="rounded-3xl bg-white border border-slate-200 shadow-xl p-4 pointer-events-auto">
+                  {/* Top Section: Station name with View Details button on the right */}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="text-[13px] font-semibold text-slate-800 truncate flex items-center gap-2">
+                        <MapPin className="h-4 w-4 flex-shrink-0" /> {selectedStation.station.name}
+                      </div>
+                      <div className="mt-0.5 text-[11px] text-slate-600 flex items-center gap-3">
+                        <span>{selectedStation.distance}</span>
+                        <span className="inline-flex items-center gap-1">
+                          <Star className="h-3.5 w-3.5 text-amber-400 fill-amber-400" /> {selectedStation.station.rating.toFixed(1)}
+                        </span>
+                        <span>{selectedStation.station.availability.available}/{selectedStation.station.availability.total} Available</span>
+                      </div>
+                    </div>
+                    <button
+                      className="h-8 px-3 rounded-lg text-white text-[12px] font-medium shrink-0"
+                      style={{ backgroundColor: EVZ_COLORS.orange }}
+                      onClick={() => {
+                        setSelectedStation(null);
+                        push('STATION_DETAILS', { station: selectedStation.station, stationId: selectedStation.station.id });
+                      }}
+                    >
+                      View Details
+                    </button>
+                  </div>
+
+                  {/* Middle Section: Connector types with Book button on the right */}
+                  <div className="mt-2 flex items-center justify-between gap-3">
+                    <div className="flex flex-wrap gap-2 text-[11px] text-slate-700">
+                      {selectedStation.station.connectors.slice(0, 2).map((connector, i) => (
+                        <span
+                          key={i}
+                          className="px-2 py-0.5 rounded-full bg-slate-100 border border-slate-200 inline-flex items-center gap-1"
+                        >
+                          <Bolt className="h-3 w-3" /> {connector.type} {connector.power}kW
+                        </span>
+                      ))}
+                    </div>
+                    <button
+                      className="h-8 px-3 rounded-lg border border-slate-300 bg-white text-[12px] text-slate-700 shrink-0"
+                      onClick={() => {
+                        setSelectedStation(null);
+                        push('BOOK_FIXED_TIME', { stationId: selectedStation.station.id, station: selectedStation.station });
+                      }}
+                    >
+                      Book
+                    </button>
+                  </div>
+
+                  {/* Bottom Section: Navigate and Start Now buttons */}
+                  <div className="mt-3 grid grid-cols-2 gap-3">
+                    <button
+                      className="h-10 rounded-xl border border-slate-300 bg-white text-slate-700 inline-flex items-center justify-center gap-2"
+                      onClick={() => {
+                        window.open(`https://maps.google.com/?q=${selectedStation.station.location.lat},${selectedStation.station.location.lng}`, '_blank');
+                      }}
+                    >
+                      <Navigation2 className="h-4 w-4" /> Navigate
+                    </button>
+                    <button
+                      className="h-10 rounded-xl text-white font-medium"
+                      style={{ backgroundColor: EVZ_COLORS.orange }}
+                      onClick={() => {
+                        setSelectedStation(null);
+                        push('ACTIVATION_SCAN', { stationId: selectedStation.station.id });
+                      }}
+                    >
+                      Start Now
+                    </button>
+                  </div>
                 </div>
               </div>
             </motion.div>

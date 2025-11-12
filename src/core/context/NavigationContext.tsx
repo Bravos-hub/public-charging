@@ -28,6 +28,7 @@ export const ROUTES = {
   FILTERS: { title: 'Filters' },
   
   // Station flows
+  STATION_PREVIEW: { title: 'Station Preview' },
   STATION_DETAILS: { title: 'Station Details' },
   STATION_CHARGERS: { title: 'Chargers' },
   STATION_AMENITIES: { title: 'Amenities & Chat' },
@@ -56,6 +57,19 @@ export const ROUTES = {
   PROFILE_SETTINGS: { title: 'Settings' },
   PROFILE_NOTIFICATIONS: { title: 'Notifications' },
   PROFILE_LANGUAGE: { title: 'Language & Units' },
+  
+  // Location permission
+  ENABLE_LOCATION: { title: 'Enable Location' },
+  
+  // Filter screens
+  FILTER_CONNECTOR_TYPES: { title: 'Connector Types' },
+  FILTER_POWER: { title: 'Power (kW)' },
+  FILTER_NETWORKS: { title: 'Networks' },
+  FILTER_LOCATION_TYPES: { title: 'Location Types' },
+  FILTER_ACCESS: { title: 'Access' },
+  FILTER_USER_RATING: { title: 'User Rating' },
+  FILTER_MULTIPLE_DEVICES: { title: 'Multiple Devices' },
+  FILTER_STATION_CATEGORY: { title: 'Station Category' },
 } as const;
 
 interface NavigationProviderProps {

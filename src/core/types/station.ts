@@ -47,5 +47,7 @@ export interface StationFilters {
   access?: string[];
   locationTypes?: string[];
   userRating?: number;
+  multipleDevices?: number;
+  category?: string;
 }
 

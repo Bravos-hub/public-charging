@@ -48,6 +48,7 @@ interface AmenitiesListProps {
   initialMessages?: Message[];
   onBack?: () => void;
   onSendMessage?: (text: string) => void;
+  onTabChange?: (tab: 'overview' | 'chargers' | 'amenities') => void;
 }
 
 export function AmenitiesList({
@@ -58,6 +59,7 @@ export function AmenitiesList({
   ],
   onBack,
   onSendMessage,
+  onTabChange,
 }: AmenitiesListProps): React.ReactElement {
   const [msg, setMsg] = useState('');
   const [items, setItems] = useState<Message[]>(initialMessages);
@@ -94,8 +96,18 @@ export function AmenitiesList({
       {/* Segmented header */}
       <div className="max-w-md mx-auto px-4 pt-3">
         <div className="grid grid-cols-3 rounded-xl bg-slate-100 p-1 text-[12px]">
-          <button className="h-9 rounded-lg text-slate-600">Overview</button>
-          <button className="h-9 rounded-lg text-slate-600">Chargers</button>
+          <button 
+            className="h-9 rounded-lg text-slate-600"
+            onClick={() => onTabChange?.('overview')}
+          >
+            Overview
+          </button>
+          <button 
+            className="h-9 rounded-lg text-slate-600"
+            onClick={() => onTabChange?.('chargers')}
+          >
+            Chargers
+          </button>
           <button className="h-9 rounded-lg bg-white shadow font-semibold">Amenities/Chat</button>
         </div>
       </div>
