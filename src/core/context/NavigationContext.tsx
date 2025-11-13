@@ -32,10 +32,16 @@ export const ROUTES = {
   STATION_DETAILS: { title: 'Station Details' },
   STATION_CHARGERS: { title: 'Chargers' },
   STATION_AMENITIES: { title: 'Amenities & Chat' },
+  STATION_RATE: { title: 'Rate Station' },
+  STATION_REPORT: { title: 'Report a Problem' },
   
   // Booking flows
   BOOK_FIXED_TIME: { title: 'Reserve Station' },
+  BOOK_MOBILE_LOCATION: { title: 'Mobile Charging — Location' },
+  BOOK_MOBILE_TIME_TARGETS: { title: 'Mobile — Time & Targets' },
   BOOK_MOBILE_TIME: { title: 'Book Mobile Charging' },
+  BOOK_MOBILE_ON_THE_WAY: { title: 'Mobile charging on the way' },
+  BOOK_FEE_PAYMENT: { title: 'Booking Fee — Advance Scheduling' },
   BOOK_PAYMENT: { title: 'Payment' },
   BOOK_CONFIRMATION: { title: 'Reservation Confirmed' },
   BOOK_DETAIL: { title: 'Booking Details' },
@@ -44,6 +50,7 @@ export const ROUTES = {
   ACTIVATION_SCAN: { title: 'Activate — Scan QR' },
   ACTIVATION_ENTER_ID: { title: 'Activate — Enter ID' },
   ACTIVATION_CHOOSE_CONNECTOR: { title: 'Activate — Choose Connector' },
+  SCAN_FAILED: { title: 'Scan failed' },
   PREPAID_CHARGING: { title: 'Prepaid — Fixed Charging' },
   CHARGING_READY: { title: 'Charging Ready' },
   CHARGING_IN_PROGRESS: { title: 'Charging' },
@@ -54,14 +61,18 @@ export const ROUTES = {
   // Wallet flows
   WALLET_ADD_METHOD: { title: 'Add Payment Method' },
   WALLET_TRANSACTIONS: { title: 'Transactions' },
+  PAYMENT_VERIFICATION: { title: 'Payment Verification' },
+  REFUND_VOID: { title: 'Refund / Void' },
   
   // Profile flows
   PROFILE_SETTINGS: { title: 'Settings' },
   PROFILE_NOTIFICATIONS: { title: 'Notifications' },
   PROFILE_LANGUAGE: { title: 'Language & Units' },
+  PROFILE_FAVORITES: { title: 'Favorites' },
   
   // Location permission
   ENABLE_LOCATION: { title: 'Enable Location' },
+  CAMERA_PERMISSION: { title: 'Use your camera' },
   
   // Filter screens
   FILTER_CONNECTOR_TYPES: { title: 'Connector Types' },
@@ -72,6 +83,20 @@ export const ROUTES = {
   FILTER_USER_RATING: { title: 'User Rating' },
   FILTER_MULTIPLE_DEVICES: { title: 'Multiple Devices' },
   FILTER_STATION_CATEGORY: { title: 'Station Category' },
+  
+  // Activity screens
+  EXPORT_CENTER: { title: 'Export Center' },
+  RECEIPT: { title: 'Receipt' },
+  
+  // Support screens
+  CONTACT_SUPPORT: { title: 'Contact / Support' },
+  TERMS_OF_SERVICE: { title: 'Terms of Service' },
+  
+  // System / Status
+  SYSTEM_OFFLINE: { title: 'Offline' },
+  
+  // Tools
+  COMPATIBILITY_HELPER: { title: 'Compatibility Helper' },
 } as const;
 
 interface NavigationProviderProps {
@@ -119,4 +144,3 @@ export function useNavigation(): NavigationContextValue {
   }
   return context;
 }
-

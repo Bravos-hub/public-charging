@@ -2,11 +2,14 @@
  * Station Details Overview Component (TypeScript)
  */
 
-import React, { useRef, useState, useEffect } from 'react';
-import { MapPin, ArrowLeft, Share2, Heart, Navigation2, Phone, Images } from 'lucide-react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
+import { MapPin, ArrowLeft, Share2, Heart, Navigation2, Phone, Images, MessageSquare, Star } from 'lucide-react';
 import { EVZ_COLORS } from '../../../core/utils/constants';
 import { Header } from '../../../shared/components/ui/Header';
 import type { Station } from '../../../core/types';
+import { useApp } from '../../../core';
+import { useNavigation } from '../../../core';
+import { GridEventAlert } from './GridEventAlert';
 
 interface StarRatingProps {
   value?: number;
@@ -90,6 +93,27 @@ export function StationOverview({
   };
 
   const s = station || defaultStation;
+  const { favorites, setFavorites } = useApp();
+  const { push } = useNavigation();
+  const isFavorite = useMemo(() => favorites.some((f) => f.id === s.id), [favorites, s.id]);
+  function toggleFavorite(): void {
+    setFavorites((list) => {
+      const exists = list.some((f) => f.id === s.id);
+      if (exists) return list.filter((f) => f.id !== s.id);
+      return [
+        ...list,
+        {
+          id: s.id,
+          name: s.name,
+          address: s.address,
+          location: s.location,
+          rating: s.rating,
+          availability: { total: s.availability.total, available: s.availability.available },
+          connectors: s.connectors.map((c) => ({ type: c.type, power: c.power })),
+        },
+      ];
+    });
+  }
   const galleryRef = useRef<HTMLDivElement>(null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const imageCount = 5;
@@ -133,8 +157,8 @@ export function StationOverview({
             <button aria-label="Share">
               <Share2 className="h-5 w-5" />
             </button>
-            <button aria-label="Save">
-              <Heart className="h-5 w-5" />
+            <button aria-label="Save" onClick={toggleFavorite} title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}>
+              <Heart className={`h-5 w-5 ${isFavorite ? 'text-rose-500 fill-rose-500' : ''}`} />
             </button>
           </div>
         </div>
@@ -163,6 +187,11 @@ export function StationOverview({
               Amenities/Chat
             </button>
           </div>
+        </div>
+
+        {/* Grid Event (demo) */}
+        <div className="mt-4 px-4">
+          <GridEventAlert />
         </div>
 
         {/* Gallery */}
@@ -253,7 +282,7 @@ export function StationOverview({
         </div>
 
         {/* Actions */}
-        <div className="px-4 mt-5 pb-24 grid grid-cols-3 gap-3">
+        <div className="px-4 mt-5 grid grid-cols-3 gap-3">
           <button
             className="h-11 rounded-xl text-white font-medium"
             style={{ backgroundColor: EVZ_COLORS.orange }}
@@ -276,8 +305,23 @@ export function StationOverview({
             Start Now
           </button>
         </div>
+
+        {/* Secondary actions */}
+        <div className="px-4 mt-3 pb-24 grid grid-cols-2 gap-3">
+          <button
+            onClick={() => push('STATION_RATE', { station: s })}
+            className="h-11 rounded-xl border border-slate-300 bg-white text-slate-700 inline-flex items-center justify-center gap-2"
+          >
+            <Star className="h-4 w-4" /> Rate Station
+          </button>
+          <button
+            onClick={() => push('STATION_REPORT', { station: s })}
+            className="h-11 rounded-xl border border-slate-300 bg-white text-slate-700 inline-flex items-center justify-center gap-2"
+          >
+            <MessageSquare className="h-4 w-4" /> Report a Problem
+          </button>
+        </div>
       </main>
     </div>
   );
 }
-

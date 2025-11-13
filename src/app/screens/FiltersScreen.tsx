@@ -3,7 +3,7 @@
  */
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { ArrowLeft, PlugZap, Gauge, Building2, MapPin, Users, Layers, Star, CheckSquare, Filter } from 'lucide-react';
+import { ArrowLeft, PlugZap, Gauge, Building2, MapPin, Users, Layers, Star, CheckSquare, Filter, Wrench } from 'lucide-react';
 import { EVZ_COLORS } from '../../core/utils/constants';
 import { useNavigation, useApp } from '../../core';
 
@@ -151,6 +151,15 @@ export function FiltersScreen(): React.ReactElement {
         {/* Filter sections */}
         <div className="mt-4 grid gap-3">
           <FilterRow
+            icon={Wrench}
+            title="Compatibility Helper"
+            subtitle="Match vehicle to connector types"
+            count={''}
+            onClick={() => {
+              push('COMPATIBILITY_HELPER');
+            }}
+          />
+          <FilterRow
             icon={PlugZap}
             title="Connector Types"
             subtitle="CCS2, CHAdeMO, Type2, NACS…"
@@ -244,4 +253,3 @@ export function FiltersScreen(): React.ReactElement {
     </div>
   );
 }
-

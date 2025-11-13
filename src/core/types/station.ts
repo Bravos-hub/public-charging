@@ -51,3 +51,13 @@ export interface StationFilters {
   category?: string;
 }
 
+export interface FavoriteStation {
+  id: string;
+  name: string;
+  location: Location;
+  address: string;
+  rating?: number;
+  connectors?: Array<{ type: string; power?: number }>;
+  availability?: { total: number; available: number };
+  distanceKm?: number;
+}

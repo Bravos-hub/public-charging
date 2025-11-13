@@ -3,13 +3,15 @@
  * Preview card for station with quick actions
  */
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useNavigation } from '../../core';
 import { StationCard } from '../../features/discovery/components/StationCard';
 import type { Station } from '../../core/types';
+import { useApp } from '../../core';
 
 export function StationPreviewScreen(): React.ReactElement {
   const { route, back, push } = useNavigation();
+  const { favorites, setFavorites } = useApp();
   
   // Get station from route params or use default
   const station: Station = route.params?.station || {
@@ -46,6 +48,26 @@ export function StationPreviewScreen(): React.ReactElement {
     push('ACTIVATION_SCAN', { stationId: station.id });
   }
 
+  const isFavorite = useMemo(() => favorites.some((f) => f.id === station.id), [favorites, station.id]);
+  function toggleFavorite(): void {
+    setFavorites((list) => {
+      const exists = list.some((f) => f.id === station.id);
+      if (exists) return list.filter((f) => f.id !== station.id);
+      return [
+        ...list,
+        {
+          id: station.id,
+          name: station.name,
+          address: station.address,
+          location: station.location,
+          rating: station.rating,
+          availability: { total: station.availability.total, available: station.availability.available },
+          connectors: station.connectors.map((c) => ({ type: c.type, power: c.power })),
+        },
+      ];
+    });
+  }
+
   return (
     <StationCard
       station={station}
@@ -54,7 +76,8 @@ export function StationPreviewScreen(): React.ReactElement {
       onBook={handleBook}
       onNavigate={handleNavigate}
       onStartNow={handleStartNow}
+      isFavorite={isFavorite}
+      onToggleFavorite={toggleFavorite}
     />
   );
 }
-

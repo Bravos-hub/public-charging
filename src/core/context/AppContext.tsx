@@ -12,6 +12,7 @@ import type {
   ChargingSession,
   Wallet,
   StationFilters,
+  FavoriteStation,
 } from '../types';
 
 interface AppState {
@@ -27,6 +28,7 @@ interface AppState {
     active: ChargingSession | null;
   };
   wallet: Wallet;
+  favorites: FavoriteStation[];
 }
 
 interface AppContextValue extends AppState {
@@ -37,6 +39,7 @@ interface AppContextValue extends AppState {
   setMobileDraft: React.Dispatch<React.SetStateAction<BookingDraft | null>>;
   setSession: React.Dispatch<React.SetStateAction<{ active: ChargingSession | null }>>;
   setWallet: React.Dispatch<React.SetStateAction<Wallet>>;
+  setFavorites: React.Dispatch<React.SetStateAction<FavoriteStation[]>>;
 }
 
 const AppCtx = createContext<AppContextValue | null>(null);
@@ -69,6 +72,31 @@ export function AppProvider({ children }: AppProviderProps): React.ReactElement 
     currency: 'UGX',
     methods: [],
   });
+  const [favorites, setFavorites] = useState<FavoriteStation[]>([
+    {
+      id: 'KLA-CENTRAL-001',
+      name: 'Central Hub — Downtown Mall',
+      address: 'Plot 10 Main St, Kampala, UG',
+      location: { lat: 0.3476, lng: 32.5825 },
+      rating: 4.6,
+      availability: { total: 4, available: 2 },
+      connectors: [
+        { type: 'CCS2', power: 60 },
+        { type: 'Type2', power: 22 },
+      ],
+      distanceKm: 0.8,
+    },
+    {
+      id: 'KLA-AIRPORT-B',
+      name: 'Airport Park — Lot B',
+      address: 'Airport Road, Kampala, UG',
+      location: { lat: 0.0406, lng: 32.4435 },
+      rating: 4.3,
+      availability: { total: 3, available: 1 },
+      connectors: [{ type: 'Type2', power: 22 }],
+      distanceKm: 4.2,
+    },
+  ]);
 
   const sdk = useMemo(() => {
     const getToken: GetToken = () => auth.token;
@@ -91,8 +119,10 @@ export function AppProvider({ children }: AppProviderProps): React.ReactElement 
       setSession,
       wallet,
       setWallet,
+      favorites,
+      setFavorites,
     }),
-    [auth, vehicle, filters, bookingDraft, mobileDraft, session, wallet]
+    [auth, vehicle, filters, bookingDraft, mobileDraft, session, wallet, favorites]
   );
 
   return (
@@ -117,4 +147,3 @@ export function useSdk(): Sdk {
   }
   return context;
 }
-

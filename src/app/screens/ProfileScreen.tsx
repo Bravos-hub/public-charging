@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import { Settings, Bell, History as HistoryIcon, Home } from 'lucide-react';
+import { Settings, Bell, History as HistoryIcon, Home, Heart, FileText } from 'lucide-react';
 import { useNavigation } from '../../core';
 
 export function ProfileScreen(): React.ReactElement {
@@ -11,6 +11,12 @@ export function ProfileScreen(): React.ReactElement {
 
   return (
     <div className="w-full p-4 grid gap-3">
+      <button
+        onClick={() => push('PROFILE_FAVORITES')}
+        className="h-11 rounded-xl border border-slate-300 bg-white text-slate-700 inline-flex items-center gap-2 px-3 hover:bg-slate-50 transition-colors"
+      >
+        <Heart className="h-4 w-4" /> Favorites
+      </button>
       <button
         onClick={() => push('PROFILE_SETTINGS')}
         className="h-11 rounded-xl border border-slate-300 bg-white text-slate-700 inline-flex items-center gap-2 px-3 hover:bg-slate-50 transition-colors"
@@ -32,7 +38,12 @@ export function ProfileScreen(): React.ReactElement {
       <button className="h-11 rounded-xl border border-slate-300 bg-white text-slate-700 inline-flex items-center gap-2 px-3 hover:bg-slate-50 transition-colors">
         <Home className="h-4 w-4" /> Add to Home
       </button>
+      <button
+        onClick={() => push('TERMS_OF_SERVICE')}
+        className="h-11 rounded-xl border border-slate-300 bg-white text-slate-700 inline-flex items-center gap-2 px-3 hover:bg-slate-50 transition-colors"
+      >
+        <FileText className="h-4 w-4" /> Terms of Service
+      </button>
     </div>
   );
 }
-

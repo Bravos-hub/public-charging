@@ -5,6 +5,7 @@
 import React, { useMemo, useState } from 'react';
 import { ArrowLeft, Calendar, MapPin } from 'lucide-react';
 import { EVZ_COLORS } from '../../../core/utils/constants';
+import { useNavigation } from '../../../core';
 
 interface Day {
   key: number;
@@ -77,6 +78,7 @@ export function TimePicker({
   onTimeSelect,
   onBack,
 }: TimePickerProps): React.ReactElement {
+  const { route, push } = useNavigation();
   const [mode, setMode] = useState<'fixed' | 'mobile'>(initialMode);
   const [dateIndex, setDateIndex] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
@@ -117,6 +119,15 @@ export function TimePicker({
   }
 
   function handleModeChange(newMode: 'fixed' | 'mobile'): void {
+    if (newMode === 'mobile') {
+      // Navigate to mobile charging location screen, preserving station info
+      push('BOOK_MOBILE_LOCATION', {
+        station: route.params?.station,
+        stationId: route.params?.stationId,
+        stationName: route.params?.stationName || stationName,
+      });
+      return;
+    }
     setMode(newMode);
     onModeChange?.(newMode);
   }

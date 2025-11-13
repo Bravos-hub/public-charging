@@ -15,6 +15,8 @@ interface StationCardProps {
   onBook?: () => void;
   onNavigate?: () => void;
   onStartNow?: () => void;
+  isFavorite?: boolean;
+  onToggleFavorite?: () => void;
 }
 
 export function StationCard({
@@ -24,6 +26,8 @@ export function StationCard({
   onBook,
   onNavigate,
   onStartNow,
+  isFavorite = false,
+  onToggleFavorite,
 }: StationCardProps): React.ReactElement {
   const availText = `${station.availability.available}/${station.availability.total}`;
 
@@ -50,13 +54,25 @@ export function StationCard({
                   <span>{availText} Available</span>
                 </div>
               </div>
-              <button
-                className="h-8 px-3 rounded-lg text-white text-[12px] font-medium shrink-0"
-                style={{ backgroundColor: EVZ_COLORS.orange }}
-                onClick={onViewDetails}
-              >
-                View Details
-              </button>
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  aria-label="Favorite"
+                  onClick={onToggleFavorite}
+                  className="h-8 w-8 grid place-items-center rounded-lg border border-slate-300 bg-white"
+                  title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+                >
+                  <svg viewBox="0 0 24 24" className={`h-4 w-4 ${isFavorite ? 'text-rose-500 fill-rose-500' : 'text-slate-600'}`}>
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 6 4 4 6.5 4c1.74 0 3.41 1.01 4.22 2.53C11.09 5.01 12.76 4 14.5 4 17 4 19 6 19 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                  </svg>
+                </button>
+                <button
+                  className="h-8 px-3 rounded-lg text-white text-[12px] font-medium"
+                  style={{ backgroundColor: EVZ_COLORS.orange }}
+                  onClick={onViewDetails}
+                >
+                  View Details
+                </button>
+              </div>
             </div>
 
             {/* Middle Section: Connector types with Book button on the right */}
@@ -101,4 +117,3 @@ export function StationCard({
     </div>
   );
 }
-

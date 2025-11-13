@@ -328,6 +328,7 @@ interface SessionRowProps {
   item: {
     station: string;
     dateLabel: string;
+    date: Date;
     energy: number;
     duration: string;
     total: number;
@@ -335,7 +336,92 @@ interface SessionRowProps {
 }
 
 function SessionRow({ item }: SessionRowProps): React.ReactElement {
+  const { push } = useNavigation();
   const formatMoney = (n: number): string => `UGX ${n.toLocaleString()}`;
+
+  // Calculate end time from duration
+  const calculateEndTime = (startDate: Date, duration: string): Date => {
+    const [hours, minutes] = duration.split('h ').map((part, idx) => {
+      if (idx === 0) return parseInt(part) || 0;
+      return parseInt(part.replace('m', '')) || 0;
+    });
+    const endTime = new Date(startDate);
+    endTime.setHours(endTime.getHours() + hours);
+    endTime.setMinutes(endTime.getMinutes() + minutes);
+    return endTime;
+  };
+
+  function handleReceipt(): void {
+    // Create a session object for the receipt screen
+    const startTime = item.date;
+    const endTime = calculateEndTime(startTime, item.duration);
+    
+    // Calculate price per kWh
+    const pricePerKwh = item.total / item.energy;
+    
+    const session = {
+      id: `SESSION-${startTime.getTime()}`,
+      stationId: '1',
+      connectorId: '1',
+      startTime: startTime.toISOString(),
+      endTime: endTime.toISOString(),
+      energyDelivered: item.energy,
+      cost: item.total,
+      status: 'completed' as const,
+    };
+
+    const station = {
+      id: '1',
+      name: item.station,
+      address: 'Plot 10 Main St, Kampala, UG',
+      location: { lat: 0.314, lng: 32.582 },
+      rating: 4.5,
+      price: pricePerKwh,
+      connectors: [],
+      availability: { total: 4, available: 2, busy: 2, offline: 0 },
+      amenities: [],
+      images: [],
+    };
+
+    const connector = {
+      id: '1',
+      type: 'CCS2',
+      power: 60,
+      status: 'available' as const,
+      price: pricePerKwh,
+    };
+
+    push('RECEIPT', {
+      session,
+      station,
+      connector,
+    });
+  }
+
+  async function handleShare(): Promise<void> {
+    const shareText = `EVzone Charging Session\n\nStation: ${item.station}\nDate: ${item.dateLabel}\nEnergy: ${item.energy} kWh\nDuration: ${item.duration}\nTotal: ${formatMoney(item.total)}`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'EVzone Charging Session',
+          text: shareText,
+        });
+      } catch (err) {
+        // User cancelled or error occurred
+        console.error('Error sharing:', err);
+      }
+    } else {
+      // Fallback: Copy to clipboard
+      try {
+        await navigator.clipboard.writeText(shareText);
+        alert('Session details copied to clipboard!');
+      } catch (err) {
+        console.error('Error copying to clipboard:', err);
+        alert('Unable to share session details.');
+      }
+    }
+  }
 
   return (
     <div className="p-4 rounded-2xl border border-slate-200 bg-white">
@@ -363,12 +449,16 @@ function SessionRow({ item }: SessionRowProps): React.ReactElement {
         </div>
         <div className="grid gap-2 shrink-0">
           <button
+            onClick={handleReceipt}
             className="h-9 px-3 rounded-lg text-white text-[12px] font-medium"
             style={{ backgroundColor: EVZ_COLORS.orange }}
           >
             <Receipt className="h-3.5 w-3.5 inline mr-1" /> Receipt
           </button>
-          <button className="h-9 px-3 rounded-lg border border-slate-300 bg-white text-[12px] text-slate-700">
+          <button 
+            onClick={handleShare}
+            className="h-9 px-3 rounded-lg border border-slate-300 bg-white text-[12px] text-slate-700"
+          >
             <Share2 className="h-3.5 w-3.5 inline mr-1" /> Share
           </button>
         </div>
@@ -488,7 +578,10 @@ function HistorySessionsEmbedded(): React.ReactElement {
           </div>
 
           <div className="mt-5 grid grid-cols-2 gap-3">
-            <button className="h-11 rounded-xl border border-slate-300 bg-white text-slate-700">
+            <button 
+              onClick={() => push('EXPORT_CENTER')}
+              className="h-11 rounded-xl border border-slate-300 bg-white text-slate-700"
+            >
               <FileDown className="h-4 w-4 inline mr-2" /> Export
             </button>
             <button

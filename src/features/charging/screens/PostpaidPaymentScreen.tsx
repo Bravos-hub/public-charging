@@ -47,13 +47,13 @@ export function PostpaidPaymentScreen(): React.ReactElement {
       return;
     }
 
-    // Navigate to actual payment processing
-    // For now, just go back to activity
-    push('ACTIVITY', {
-      paymentCompleted: true,
+    // Navigate to receipt screen after payment
+    push('RECEIPT', {
       session,
-      paymentMethod: selectedPayment,
+      station,
+      connector,
       amount: totalCost,
+      paymentMethod: selectedPayment,
     });
   }
 

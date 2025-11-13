@@ -10,49 +10,80 @@ import { Header } from '../shared/components/ui/Header';
 import { BottomNav } from '../shared/components/ui/BottomNav';
 import { DiscoverScreen } from './screens/DiscoverScreen';
 import { ActivityScreen } from './screens/ActivityScreen';
+import { ExportCenterScreen } from '../features/activity/screens/ExportCenterScreen';
 import { WalletScreen } from './screens/WalletScreen';
+import { AddPaymentMethodScreen } from '../features/wallet/screens/AddPaymentMethodScreen';
+import { PaymentVerificationScreen } from '../features/wallet/screens/PaymentVerificationScreen';
+import { RefundVoidScreen } from '../features/wallet/screens/RefundVoidScreen';
+import { ContactSupportScreen } from '../features/support/screens/ContactSupportScreen';
+import { TermsOfServiceScreen } from './screens/TermsOfServiceScreen';
 import { ProfileScreen } from './screens/ProfileScreen';
+import { FavoritesScreen } from '../features/profile/screens/FavoritesScreen';
 import { FiltersScreen } from './screens/FiltersScreen';
 import { StationPreviewScreen } from './screens/StationPreviewScreen';
 import { StationDetailsScreen } from './screens/StationDetailsScreen';
+import { RateStationScreen } from '../features/stations/screens/RateStationScreen';
+import { ReportProblemScreen } from '../features/stations/screens/ReportProblemScreen';
 import { EnableLocationScreen } from './screens/EnableLocationScreen';
+import { CameraPermissionScreen } from './screens/CameraPermissionScreen';
 import { TimePicker } from '../features/booking/components/TimePicker';
+import { BookingFeePaymentScreen } from '../features/booking/screens/BookingFeePaymentScreen';
 import { BookingPaymentScreen } from '../features/booking/screens/BookingPaymentScreen';
 import { BookingConfirmationScreen } from '../features/booking/screens/BookingConfirmationScreen';
+import { BookingDetailScreen } from '../features/booking/screens/BookingDetailScreen';
+import { MobileChargingLocationScreen } from '../features/booking/screens/MobileChargingLocationScreen';
+import { MobileChargingTimeTargetsScreen } from '../features/booking/screens/MobileChargingTimeTargetsScreen';
+import { MobileChargingOnTheWayScreen } from '../features/booking/screens/MobileChargingOnTheWayScreen';
 import { QRScanner } from '../features/charging/components/QRScanner';
 import { ChargingReadyScreen } from '../features/charging/screens/ChargingReadyScreen';
 import { ChargingInProgressScreen } from '../features/charging/screens/ChargingInProgressScreen';
 import { ChargingCompleteScreen } from '../features/charging/screens/ChargingCompleteScreen';
 import { ChooseConnectorScreen } from '../features/charging/screens/ChooseConnectorScreen';
 import { EnterChargerIdScreen } from '../features/charging/screens/EnterChargerIdScreen';
+import { ScanFailedScreen } from '../features/charging/screens/ScanFailedScreen';
 import { PrepaidChargingScreen } from '../features/charging/screens/PrepaidChargingScreen';
 import { PostpaidPaymentScreen } from '../features/charging/screens/PostpaidPaymentScreen';
+import { ReceiptScreen } from '../features/charging/screens/ReceiptScreen';
 import { ConnectorTypesFilter, PowerFilter, NetworksFilter, LocationTypesFilter, AccessFilter, UserRatingFilter, MultipleDevicesFilter, StationCategoryFilter } from '../shared/components/filters';
+import { CompatibilityHelperScreen } from '../features/discovery/screens/CompatibilityHelperScreen';
+import { SystemOfflineScreen } from './screens/SystemOfflineScreen';
 
 // Routes that should be full-screen (no header/bottom nav)
 const FULL_SCREEN_ROUTES = new Set([
   'STATION_PREVIEW',
   'STATION_DETAILS',
+  'STATION_RATE',
+  'STATION_REPORT',
   'BOOK_FIXED_TIME',
+  'BOOK_MOBILE_LOCATION',
+  'BOOK_MOBILE_TIME_TARGETS',
   'BOOK_MOBILE_TIME',
+  'BOOK_MOBILE_ON_THE_WAY',
+  'BOOK_FEE_PAYMENT',
   'BOOK_PAYMENT',
   'BOOK_CONFIRMATION',
   'BOOK_DETAIL',
   'ACTIVATION_SCAN',
   'ACTIVATION_ENTER_ID',
   'ACTIVATION_CHOOSE_CONNECTOR',
+  'SCAN_FAILED',
   'PREPAID_CHARGING',
   'CHARGING_READY',
   'CHARGING_IN_PROGRESS',
   'CHARGING_COMPLETE',
   'POSTPAID_PAYMENT',
+  'RECEIPT',
   'CHARGING_STOP',
   'WALLET_ADD_METHOD',
   'WALLET_TRANSACTIONS',
+  'PAYMENT_VERIFICATION',
+  'REFUND_VOID',
   'PROFILE_SETTINGS',
   'PROFILE_NOTIFICATIONS',
   'PROFILE_LANGUAGE',
+  'PROFILE_FAVORITES',
   'ENABLE_LOCATION',
+  'CAMERA_PERMISSION',
   'FILTER_CONNECTOR_TYPES',
   'FILTER_POWER',
   'FILTER_NETWORKS',
@@ -61,6 +92,11 @@ const FULL_SCREEN_ROUTES = new Set([
   'FILTER_USER_RATING',
   'FILTER_MULTIPLE_DEVICES',
   'FILTER_STATION_CATEGORY',
+  'EXPORT_CENTER',
+  'CONTACT_SUPPORT',
+  'TERMS_OF_SERVICE',
+  'SYSTEM_OFFLINE',
+  'COMPATIBILITY_HELPER',
 ]);
 
 function AppContent(): React.ReactElement {
@@ -83,6 +119,8 @@ function AppContent(): React.ReactElement {
           >
             {route.name === 'STATION_PREVIEW' && <StationPreviewScreen />}
             {route.name === 'STATION_DETAILS' && <StationDetailsScreen />}
+            {route.name === 'STATION_RATE' && <RateStationScreen />}
+            {route.name === 'STATION_REPORT' && <ReportProblemScreen />}
             {route.name === 'BOOK_FIXED_TIME' && (
               <TimePicker
                 stationName={route.params?.station?.name || route.params?.stationName || 'Central Hub'}
@@ -99,11 +137,14 @@ function AppContent(): React.ReactElement {
                     status: 'pending' as const,
                     mode: 'fixed' as const,
                   };
-                  push('BOOK_PAYMENT', { booking, time, date });
+                  push('BOOK_FEE_PAYMENT', { booking, station: route.params?.station, time, date });
                 }}
                 onBack={back}
               />
             )}
+            {route.name === 'BOOK_MOBILE_LOCATION' && <MobileChargingLocationScreen />}
+            {route.name === 'BOOK_MOBILE_TIME_TARGETS' && <MobileChargingTimeTargetsScreen />}
+            {route.name === 'BOOK_MOBILE_ON_THE_WAY' && <MobileChargingOnTheWayScreen />}
             {route.name === 'BOOK_MOBILE_TIME' && (
               <TimePicker
                 stationName={route.params?.station?.name || route.params?.stationName || 'Mobile Charging'}
@@ -118,22 +159,32 @@ function AppContent(): React.ReactElement {
                     status: 'pending' as const,
                     mode: 'mobile' as const,
                   };
-                  push('BOOK_PAYMENT', { booking, time, date });
+                  push('BOOK_FEE_PAYMENT', { booking, station: route.params?.station, time, date });
                 }}
                 onBack={back}
               />
             )}
+            {route.name === 'BOOK_FEE_PAYMENT' && <BookingFeePaymentScreen />}
             {route.name === 'BOOK_PAYMENT' && (
               <BookingPaymentScreen
                 amount={route.params?.booking?.cost || 50000}
                 currency="UGX"
                 onPay={(methodId) => {
+                  const raw = route.params?.booking || {};
+                  const start = raw.startTime ? new Date(raw.startTime) : new Date();
+                  const end = raw.endTime ? new Date(raw.endTime) : new Date(start.getTime() + 90 * 60000);
                   const booking = {
-                    ...route.params?.booking,
-                    id: route.params?.booking?.id || `BOOK-${Date.now()}`,
+                    ...raw,
+                    id: raw.id || `BOOK-${Date.now()}`,
                     status: 'confirmed' as const,
+                    startTime: start,
+                    endTime: end,
+                    paymentMethod: methodId,
                   };
-                  push('BOOK_CONFIRMATION', { booking });
+                  push('BOOK_CONFIRMATION', {
+                    booking,
+                    station: route.params?.station,
+                  });
                 }}
                 onBack={back}
               />
@@ -141,55 +192,70 @@ function AppContent(): React.ReactElement {
             {route.name === 'BOOK_CONFIRMATION' && (
               <BookingConfirmationScreen
                 booking={route.params?.booking}
+                onAddToCalendar={() => {
+                  // Create calendar event from booking
+                  const bookingData = route.params?.booking;
+                  if (bookingData?.startTime) {
+                    const start = new Date(bookingData.startTime);
+                    const end = bookingData.endTime ? new Date(bookingData.endTime) : new Date(start.getTime() + 90 * 60000);
+                    const stationName = bookingData.stationName || 'Charging Station';
+                    const address = bookingData.stationAddress || bookingData.location?.address || '';
+                    
+                    // Create Google Calendar URL
+                    const startStr = start.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+                    const endStr = end.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+                    const title = encodeURIComponent(`EV Charging - ${stationName}`);
+                    const details = encodeURIComponent(`EV Charging session at ${stationName}${address ? ` - ${address}` : ''}`);
+                    const location = encodeURIComponent(`${stationName}${address ? `, ${address}` : ''}`);
+                    const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startStr}/${endStr}&details=${details}&location=${location}`;
+                    window.open(url, '_blank');
+                  }
+                }}
+                onDirections={() => {
+                  // Open navigation to station
+                  const bookingData = route.params?.booking;
+                  const station = route.params?.station;
+                  
+                  if (station?.location) {
+                    window.open(`https://maps.google.com/?q=${station.location.lat},${station.location.lng}`, '_blank');
+                  } else if (bookingData?.location) {
+                    window.open(`https://maps.google.com/?q=${bookingData.location.lat},${bookingData.location.lng}`, '_blank');
+                  } else if (bookingData?.stationName) {
+                    const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(bookingData.stationName)}`;
+                    window.open(url, '_blank');
+                  }
+                }}
+                onViewBooking={() => {
+                  push('BOOK_DETAIL', { booking: route.params?.booking });
+                }}
+                onShare={async () => {
+                  // Share booking details
+                  const bookingData = route.params?.booking;
+                  if (bookingData) {
+                    const startDate = new Date(bookingData.startTime);
+                    const endDate = bookingData.endTime ? new Date(bookingData.endTime) : new Date(startDate.getTime() + 90 * 60000);
+                    const text = `EV Charging Reservation\n${bookingData.stationName || 'Charging Station'}\n${startDate.toLocaleDateString()} ${startDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${endDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}\nReference: ${bookingData.id || 'N/A'}`;
+                    
+                    if (navigator.share) {
+                      try {
+                        await navigator.share({ text });
+                      } catch (err) {
+                        // User cancelled or error
+                        console.log('Share cancelled');
+                      }
+                    } else {
+                      // Fallback: copy to clipboard
+                      await navigator.clipboard.writeText(text);
+                      alert('Booking details copied to clipboard!');
+                    }
+                  }
+                }}
                 onDone={() => {
                   replace('ACTIVITY');
                 }}
               />
             )}
-            {route.name === 'BOOK_DETAIL' && (
-              <div className="min-h-[100dvh] bg-white p-4">
-                <div className="max-w-md mx-auto">
-                  <button onClick={back} className="mb-4 text-slate-600">
-                    ← Back
-                  </button>
-                  <h2 className="text-xl font-bold mb-4">Booking Details</h2>
-                  <div className="space-y-4">
-                    {route.params?.booking?.stationName && (
-                      <div>
-                        <div className="text-[12px] text-slate-500 mb-1">Station</div>
-                        <div className="text-[14px] font-semibold text-slate-800">
-                          {route.params.booking.stationName}
-                        </div>
-                      </div>
-                    )}
-                    {route.params?.booking?.vehicleName && (
-                      <div>
-                        <div className="text-[12px] text-slate-500 mb-1">Vehicle</div>
-                        <div className="text-[14px] font-semibold text-slate-800">
-                          {route.params.booking.vehicleName}
-                        </div>
-                      </div>
-                    )}
-                    {route.params?.booking?.connectorType && (
-                      <div>
-                        <div className="text-[12px] text-slate-500 mb-1">Connector</div>
-                        <div className="text-[14px] font-semibold text-slate-800">
-                          {route.params.booking.connectorType}
-                        </div>
-                      </div>
-                    )}
-                    {route.params?.booking?.startTime && (
-                      <div>
-                        <div className="text-[12px] text-slate-500 mb-1">Start Time</div>
-                        <div className="text-[14px] font-semibold text-slate-800">
-                          {new Date(route.params.booking.startTime).toLocaleString()}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
+            {route.name === 'BOOK_DETAIL' && <BookingDetailScreen />}
             {route.name === 'ACTIVATION_SCAN' && (
               <QRScanner
                 onScan={(result) => {
@@ -205,6 +271,7 @@ function AppContent(): React.ReactElement {
               />
             )}
             {route.name === 'ACTIVATION_ENTER_ID' && <EnterChargerIdScreen />}
+            {route.name === 'SCAN_FAILED' && <ScanFailedScreen />}
             {route.name === 'ACTIVATION_CHOOSE_CONNECTOR' && <ChooseConnectorScreen />}
             {route.name === 'PREPAID_CHARGING' && <PrepaidChargingScreen />}
             {route.name === 'CHARGING_READY' && (
@@ -213,6 +280,7 @@ function AppContent(): React.ReactElement {
                   push('CHARGING_IN_PROGRESS', route.params);
                 }}
                 onBack={back}
+                onCancel={back}
               />
             )}
             {route.name === 'CHARGING_IN_PROGRESS' && (
@@ -251,17 +319,12 @@ function AppContent(): React.ReactElement {
               />
             )}
             {route.name === 'POSTPAID_PAYMENT' && <PostpaidPaymentScreen />}
-            {route.name === 'WALLET_ADD_METHOD' && (
-              <div className="min-h-[100dvh] bg-white p-4">
-                <div className="max-w-md mx-auto">
-                  <button onClick={back} className="mb-4 text-slate-600">
-                    ← Back
-                  </button>
-                  <h2 className="text-xl font-bold mb-4">Add Payment Method</h2>
-                  <p className="text-slate-600">Payment method form coming soon...</p>
-                </div>
-              </div>
-            )}
+            {route.name === 'RECEIPT' && <ReceiptScreen />}
+            {route.name === 'SYSTEM_OFFLINE' && <SystemOfflineScreen />}
+            {route.name === 'COMPATIBILITY_HELPER' && <CompatibilityHelperScreen />}
+            {route.name === 'WALLET_ADD_METHOD' && <AddPaymentMethodScreen />}
+            {route.name === 'PAYMENT_VERIFICATION' && <PaymentVerificationScreen />}
+            {route.name === 'REFUND_VOID' && <RefundVoidScreen />}
             {route.name === 'WALLET_TRANSACTIONS' && (
               <div className="min-h-[100dvh] bg-white p-4">
                 <div className="max-w-md mx-auto">
@@ -306,7 +369,9 @@ function AppContent(): React.ReactElement {
                 </div>
               </div>
             )}
+            {route.name === 'PROFILE_FAVORITES' && <FavoritesScreen />}
             {route.name === 'ENABLE_LOCATION' && <EnableLocationScreen />}
+            {route.name === 'CAMERA_PERMISSION' && <CameraPermissionScreen />}
             {route.name === 'FILTER_CONNECTOR_TYPES' && <ConnectorTypesFilter />}
             {route.name === 'FILTER_POWER' && <PowerFilter />}
             {route.name === 'FILTER_NETWORKS' && <NetworksFilter />}
@@ -315,6 +380,9 @@ function AppContent(): React.ReactElement {
             {route.name === 'FILTER_USER_RATING' && <UserRatingFilter />}
             {route.name === 'FILTER_MULTIPLE_DEVICES' && <MultipleDevicesFilter />}
             {route.name === 'FILTER_STATION_CATEGORY' && <StationCategoryFilter />}
+            {route.name === 'EXPORT_CENTER' && <ExportCenterScreen />}
+            {route.name === 'CONTACT_SUPPORT' && <ContactSupportScreen />}
+            {route.name === 'TERMS_OF_SERVICE' && <TermsOfServiceScreen />}
           </motion.div>
         </AnimatePresence>
       </div>
@@ -354,4 +422,3 @@ export function AppShell(): React.ReactElement {
     </NavigationProvider>
   );
 }
-

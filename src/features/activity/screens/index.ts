@@ -3,4 +3,5 @@
  */
 
 export { ActivityScreen } from './ActivityScreen';
+export { ExportCenterScreen } from './ExportCenterScreen';
 
