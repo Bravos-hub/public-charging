@@ -29,6 +29,21 @@ interface AppState {
   };
   wallet: Wallet;
   favorites: FavoriteStation[];
+  notifications: {
+    enabled: boolean;
+    booking: boolean;
+    charging: boolean;
+    payments: boolean;
+    promotions: boolean;
+    quietStart: string; // 'HH:MM'
+    quietEnd: string;   // 'HH:MM'
+  };
+  reminderPrefs: {
+    beforeStartMinutes: number[]; // multi-select e.g., [15,30]
+    showCountdown: boolean;
+    graceWarning: boolean;
+    graceWarnMinutes: number; // 5 means 5 min before end
+  };
 }
 
 interface AppContextValue extends AppState {
@@ -40,6 +55,8 @@ interface AppContextValue extends AppState {
   setSession: React.Dispatch<React.SetStateAction<{ active: ChargingSession | null }>>;
   setWallet: React.Dispatch<React.SetStateAction<Wallet>>;
   setFavorites: React.Dispatch<React.SetStateAction<FavoriteStation[]>>;
+  setNotifications: React.Dispatch<React.SetStateAction<AppState['notifications']>>;
+  setReminderPrefs: React.Dispatch<React.SetStateAction<AppState['reminderPrefs']>>;
 }
 
 const AppCtx = createContext<AppContextValue | null>(null);
@@ -97,6 +114,21 @@ export function AppProvider({ children }: AppProviderProps): React.ReactElement 
       distanceKm: 4.2,
     },
   ]);
+  const [notifications, setNotifications] = useState<AppState['notifications']>({
+    enabled: true,
+    booking: true,
+    charging: true,
+    payments: true,
+    promotions: false,
+    quietStart: '22:00',
+    quietEnd: '06:00',
+  });
+  const [reminderPrefs, setReminderPrefs] = useState<AppState['reminderPrefs']>({
+    beforeStartMinutes: [15, 30],
+    showCountdown: true,
+    graceWarning: true,
+    graceWarnMinutes: 5,
+  });
 
   const sdk = useMemo(() => {
     const getToken: GetToken = () => auth.token;
@@ -121,8 +153,12 @@ export function AppProvider({ children }: AppProviderProps): React.ReactElement 
       setWallet,
       favorites,
       setFavorites,
+      notifications,
+      setNotifications,
+      reminderPrefs,
+      setReminderPrefs,
     }),
-    [auth, vehicle, filters, bookingDraft, mobileDraft, session, wallet, favorites]
+    [auth, vehicle, filters, bookingDraft, mobileDraft, session, wallet, favorites, notifications, reminderPrefs]
   );
 
   return (

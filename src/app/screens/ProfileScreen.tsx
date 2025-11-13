@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import { Settings, Bell, History as HistoryIcon, Home, Heart, FileText } from 'lucide-react';
+import { Settings, Bell, History as HistoryIcon, Home, Heart, FileText, Shield, AlarmClock } from 'lucide-react';
 import { useNavigation } from '../../core';
 
 export function ProfileScreen(): React.ReactElement {
@@ -30,6 +30,12 @@ export function ProfileScreen(): React.ReactElement {
         <Bell className="h-4 w-4" /> Notification Settings
       </button>
       <button
+        onClick={() => push('PROFILE_REMINDERS')}
+        className="h-11 rounded-xl border border-slate-300 bg-white text-slate-700 inline-flex items-center gap-2 px-3 hover:bg-slate-50 transition-colors"
+      >
+        <AlarmClock className="h-4 w-4" /> Reminder Preferences
+      </button>
+      <button
         onClick={() => push('ACTIVITY')}
         className="h-11 rounded-xl border border-slate-300 bg-white text-slate-700 inline-flex items-center gap-2 px-3 hover:bg-slate-50 transition-colors"
       >
@@ -43,6 +49,18 @@ export function ProfileScreen(): React.ReactElement {
         className="h-11 rounded-xl border border-slate-300 bg-white text-slate-700 inline-flex items-center gap-2 px-3 hover:bg-slate-50 transition-colors"
       >
         <FileText className="h-4 w-4" /> Terms of Service
+      </button>
+      <button
+        onClick={() => push('PRIVACY_POLICY')}
+        className="h-11 rounded-xl border border-slate-300 bg-white text-slate-700 inline-flex items-center gap-2 px-3 hover:bg-slate-50 transition-colors"
+      >
+        <Shield className="h-4 w-4" /> Privacy Policy
+      </button>
+      <button
+        onClick={() => push('PRIVACY_SUPPORT')}
+        className="h-11 rounded-xl border border-slate-300 bg-white text-slate-700 inline-flex items-center gap-2 px-3 hover:bg-slate-50 transition-colors"
+      >
+        <Shield className="h-4 w-4" /> Privacy & Support
       </button>
     </div>
   );

@@ -68,6 +68,7 @@ export const ROUTES = {
   PROFILE_SETTINGS: { title: 'Settings' },
   PROFILE_NOTIFICATIONS: { title: 'Notifications' },
   PROFILE_LANGUAGE: { title: 'Language & Units' },
+  PROFILE_REMINDERS: { title: 'Reminder Preferences' },
   PROFILE_FAVORITES: { title: 'Favorites' },
   
   // Location permission
@@ -91,9 +92,12 @@ export const ROUTES = {
   // Support screens
   CONTACT_SUPPORT: { title: 'Contact / Support' },
   TERMS_OF_SERVICE: { title: 'Terms of Service' },
+  PRIVACY_POLICY: { title: 'Privacy Policy' },
+  PRIVACY_SUPPORT: { title: 'Privacy & Support' },
   
   // System / Status
   SYSTEM_OFFLINE: { title: 'Offline' },
+  OFFLINE_CACHE: { title: 'Offline Cache' },
   
   // Tools
   COMPATIBILITY_HELPER: { title: 'Compatibility Helper' },

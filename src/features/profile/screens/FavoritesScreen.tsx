@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { Heart, MapPin, Navigation2, Trash2, Zap } from 'lucide-react';
+import { ArrowLeft, Heart, MapPin, Navigation2, Trash2, Zap } from 'lucide-react';
 import { EVZ_COLORS } from '../../../core/utils/constants';
 import { useApp } from '../../../core';
 import { useNavigation } from '../../../core';
@@ -26,9 +26,15 @@ export function FavoritesScreen(): React.ReactElement {
     <div className="min-h-[100dvh] bg-white text-slate-900">
       {/* Header */}
       <div className="sticky top-0 z-10 w-full" style={{ backgroundColor: EVZ_COLORS.green }}>
-        <div className="max-w-md mx-auto h-14 px-4 flex items-center text-white">
-          <Heart className="h-5 w-5" />
-          <span className="ml-2 font-semibold">Favorites</span>
+        <div className="max-w-md mx-auto h-14 px-4 flex items-center justify-between text-white">
+          <button aria-label="Back" onClick={back}>
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+          <div className="flex items-center gap-2">
+            <Heart className="h-5 w-5" />
+            <span className="font-semibold">Favorites</span>
+          </div>
+          <div className="w-5" />
         </div>
       </div>
 

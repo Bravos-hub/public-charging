@@ -15,10 +15,16 @@ import { WalletScreen } from './screens/WalletScreen';
 import { AddPaymentMethodScreen } from '../features/wallet/screens/AddPaymentMethodScreen';
 import { PaymentVerificationScreen } from '../features/wallet/screens/PaymentVerificationScreen';
 import { RefundVoidScreen } from '../features/wallet/screens/RefundVoidScreen';
+import { TransactionsScreen } from '../features/wallet/screens/TransactionsScreen';
 import { ContactSupportScreen } from '../features/support/screens/ContactSupportScreen';
 import { TermsOfServiceScreen } from './screens/TermsOfServiceScreen';
+import { PrivacyPolicyScreen } from './screens/PrivacyPolicyScreen';
 import { ProfileScreen } from './screens/ProfileScreen';
 import { FavoritesScreen } from '../features/profile/screens/FavoritesScreen';
+import { NotificationSettingsScreen } from '../features/profile/screens/NotificationSettingsScreen';
+import { ReminderPreferencesScreen } from '../features/profile/screens/ReminderPreferencesScreen';
+import { ProfileSettingsScreen } from '../features/profile/screens/ProfileSettingsScreen';
+import { PrivacySupportScreen } from '../features/profile/screens/PrivacySupportScreen';
 import { FiltersScreen } from './screens/FiltersScreen';
 import { StationPreviewScreen } from './screens/StationPreviewScreen';
 import { StationDetailsScreen } from './screens/StationDetailsScreen';
@@ -47,6 +53,7 @@ import { ReceiptScreen } from '../features/charging/screens/ReceiptScreen';
 import { ConnectorTypesFilter, PowerFilter, NetworksFilter, LocationTypesFilter, AccessFilter, UserRatingFilter, MultipleDevicesFilter, StationCategoryFilter } from '../shared/components/filters';
 import { CompatibilityHelperScreen } from '../features/discovery/screens/CompatibilityHelperScreen';
 import { SystemOfflineScreen } from './screens/SystemOfflineScreen';
+import { OfflineCacheScreen } from './screens/OfflineCacheScreen';
 
 // Routes that should be full-screen (no header/bottom nav)
 const FULL_SCREEN_ROUTES = new Set([
@@ -82,6 +89,8 @@ const FULL_SCREEN_ROUTES = new Set([
   'PROFILE_NOTIFICATIONS',
   'PROFILE_LANGUAGE',
   'PROFILE_FAVORITES',
+  'PROFILE_REMINDERS',
+  'PRIVACY_SUPPORT',
   'ENABLE_LOCATION',
   'CAMERA_PERMISSION',
   'FILTER_CONNECTOR_TYPES',
@@ -95,7 +104,9 @@ const FULL_SCREEN_ROUTES = new Set([
   'EXPORT_CENTER',
   'CONTACT_SUPPORT',
   'TERMS_OF_SERVICE',
+  'PRIVACY_POLICY',
   'SYSTEM_OFFLINE',
+  'OFFLINE_CACHE',
   'COMPATIBILITY_HELPER',
 ]);
 
@@ -321,43 +332,16 @@ function AppContent(): React.ReactElement {
             {route.name === 'POSTPAID_PAYMENT' && <PostpaidPaymentScreen />}
             {route.name === 'RECEIPT' && <ReceiptScreen />}
             {route.name === 'SYSTEM_OFFLINE' && <SystemOfflineScreen />}
+            {route.name === 'OFFLINE_CACHE' && <OfflineCacheScreen />}
             {route.name === 'COMPATIBILITY_HELPER' && <CompatibilityHelperScreen />}
             {route.name === 'WALLET_ADD_METHOD' && <AddPaymentMethodScreen />}
             {route.name === 'PAYMENT_VERIFICATION' && <PaymentVerificationScreen />}
             {route.name === 'REFUND_VOID' && <RefundVoidScreen />}
-            {route.name === 'WALLET_TRANSACTIONS' && (
-              <div className="min-h-[100dvh] bg-white p-4">
-                <div className="max-w-md mx-auto">
-                  <button onClick={back} className="mb-4 text-slate-600">
-                    ← Back
-                  </button>
-                  <h2 className="text-xl font-bold mb-4">Transactions</h2>
-                  <p className="text-slate-600">Transaction history coming soon...</p>
-                </div>
-              </div>
-            )}
+            {route.name === 'WALLET_TRANSACTIONS' && <TransactionsScreen />}
             {route.name === 'PROFILE_SETTINGS' && (
-              <div className="min-h-[100dvh] bg-white p-4">
-                <div className="max-w-md mx-auto">
-                  <button onClick={back} className="mb-4 text-slate-600">
-                    ← Back
-                  </button>
-                  <h2 className="text-xl font-bold mb-4">Settings</h2>
-                  <p className="text-slate-600">Settings coming soon...</p>
-                </div>
-              </div>
+              <ProfileSettingsScreen />
             )}
-            {route.name === 'PROFILE_NOTIFICATIONS' && (
-              <div className="min-h-[100dvh] bg-white p-4">
-                <div className="max-w-md mx-auto">
-                  <button onClick={back} className="mb-4 text-slate-600">
-                    ← Back
-                  </button>
-                  <h2 className="text-xl font-bold mb-4">Notifications</h2>
-                  <p className="text-slate-600">Notification settings coming soon...</p>
-                </div>
-              </div>
-            )}
+            {route.name === 'PROFILE_NOTIFICATIONS' && <NotificationSettingsScreen />}
             {route.name === 'PROFILE_LANGUAGE' && (
               <div className="min-h-[100dvh] bg-white p-4">
                 <div className="max-w-md mx-auto">
@@ -370,6 +354,8 @@ function AppContent(): React.ReactElement {
               </div>
             )}
             {route.name === 'PROFILE_FAVORITES' && <FavoritesScreen />}
+            {route.name === 'PROFILE_REMINDERS' && <ReminderPreferencesScreen />}
+            {route.name === 'PRIVACY_SUPPORT' && <PrivacySupportScreen />}
             {route.name === 'ENABLE_LOCATION' && <EnableLocationScreen />}
             {route.name === 'CAMERA_PERMISSION' && <CameraPermissionScreen />}
             {route.name === 'FILTER_CONNECTOR_TYPES' && <ConnectorTypesFilter />}
@@ -383,6 +369,7 @@ function AppContent(): React.ReactElement {
             {route.name === 'EXPORT_CENTER' && <ExportCenterScreen />}
             {route.name === 'CONTACT_SUPPORT' && <ContactSupportScreen />}
             {route.name === 'TERMS_OF_SERVICE' && <TermsOfServiceScreen />}
+            {route.name === 'PRIVACY_POLICY' && <PrivacyPolicyScreen />}
           </motion.div>
         </AnimatePresence>
       </div>
