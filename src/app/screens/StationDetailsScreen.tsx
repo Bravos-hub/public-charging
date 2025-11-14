@@ -40,7 +40,8 @@ export function StationDetailsScreen(): React.ReactElement {
   }
 
   function handleStartNow(): void {
-    push('ACTIVATION_SCAN', { stationId: station.id });
+    // Follow flow: Choose Connector → Scan / Enter ID
+    push('ACTIVATION_CHOOSE_CONNECTOR', { stationId: station.id, station });
   }
 
   function handleReserve(connector: typeof station.connectors[0]): void {
@@ -83,4 +84,3 @@ export function StationDetailsScreen(): React.ReactElement {
     />
   );
 }
-

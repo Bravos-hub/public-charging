@@ -11,7 +11,21 @@ import type { Booking } from '../../../core/types';
 
 export function BookingDetailScreen(): React.ReactElement {
   const { route, back, push } = useNavigation();
-  const booking: Booking | undefined = route.params?.booking;
+  // Prefer full booking object, but allow navigation by bookingId with fallback fields
+  const bookingId: string | undefined = route.params?.bookingId;
+  const booking: Booking | undefined = route.params?.booking ||
+    (bookingId
+      ? {
+          id: bookingId,
+          stationId: route.params?.stationId,
+          stationName: route.params?.stationName || 'Central Hub — Downtown Mall',
+          startTime: route.params?.startTime || new Date(),
+          endTime: route.params?.endTime,
+          connectorType: route.params?.connectorType || 'CCS2',
+          status: 'confirmed',
+          mode: 'fixed',
+        }
+      : undefined);
 
   const data = useMemo(() => {
     if (booking) {
@@ -50,6 +64,7 @@ export function BookingDetailScreen(): React.ReactElement {
         stationId: booking?.stationId,
         stationName: booking?.stationName,
         booking,
+        bookingId: booking?.id,
       });
     }
   }
@@ -168,4 +183,3 @@ export function BookingDetailScreen(): React.ReactElement {
     </div>
   );
 }
-

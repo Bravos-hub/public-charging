@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigation, useApp } from '../../core';
 import { EVZ_COLORS } from '../../core/utils/constants';
 import { MapSurface, type MapMarker } from '../../features/discovery/components/MapWrapper';
+import { NoStationsFound } from '../../shared/components/errors/NoStationsFound';
 import type { Location, Station } from '../../core/types';
 
 // Sample station data with connector types and power ratings
@@ -89,7 +90,7 @@ const ALL_STATIONS = [
 
 export function DiscoverScreen(): React.ReactElement {
   const { push } = useNavigation();
-  const { filters } = useApp();
+  const { filters, setFilters } = useApp();
   const [center] = useState<Location>({ lat: 0.314, lng: 32.582 });
   const [searchQuery, setSearchQuery] = useState('');
   const [showStationList, setShowStationList] = useState(false);
@@ -260,13 +261,13 @@ export function DiscoverScreen(): React.ReactElement {
         </div>
       </div>
 
-      {/* QR Scanner Button - Bottom Right */}
+      {/* QR / Activation Button - Bottom Right */}
       <div className="absolute bottom-28 right-4 z-10">
         <button
-          onClick={() => push('ACTIVATION_SCAN')}
+          onClick={() => push('ACTIVATION_CHOOSE_CONNECTOR')}
           className="h-14 w-14 rounded-2xl text-white shadow-xl flex items-center justify-center hover:shadow-2xl transition-shadow"
           style={{ background: `linear-gradient(135deg, ${EVZ_COLORS.green}, #10b981)` }}
-          title="Scan to charge"
+          title="Activate to charge"
         >
           <QrCode className="h-6 w-6" />
         </button>
@@ -291,6 +292,43 @@ export function DiscoverScreen(): React.ReactElement {
           />
         </div>
       </div>
+
+      {/* Empty state when no stations after filters */}
+      {filteredStations.length === 0 && (
+        <div className="absolute inset-0 z-30 pointer-events-none">
+          {/* Header */}
+          <div className="sticky top-0 w-full pointer-events-auto" style={{ backgroundColor: EVZ_COLORS.green }}>
+            <div className="max-w-md mx-auto h-14 px-4 flex items-center gap-2 text-white">
+              <MapPin className="h-5 w-5" />
+              <span className="font-semibold">No Stations Found</span>
+            </div>
+          </div>
+          {/* Card */}
+          <div className="max-w-md mx-auto px-4 mt-4 pointer-events-auto">
+            <NoStationsFound
+              onResetFilters={() => {
+                setFilters({
+                  onlyAvail: false,
+                  fastOnly: false,
+                  minKw: 3,
+                  maxKw: 350,
+                  connectorTypes: [],
+                  networks: [],
+                  locationTypes: [],
+                  access: [],
+                  userRating: undefined,
+                  multipleDevices: undefined,
+                  category: undefined,
+                });
+              }}
+              onSearchArea={() => {
+                // Placeholder for refreshing stations in current map viewport
+                console.log('Search this area');
+              }}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Station List Bottom Sheet */}
       <AnimatePresence>
@@ -452,8 +490,12 @@ export function DiscoverScreen(): React.ReactElement {
                       className="h-10 rounded-xl text-white font-medium"
                       style={{ backgroundColor: EVZ_COLORS.orange }}
                       onClick={() => {
+                        // Follow flow: Choose Connector → Scan QR / Enter ID
                         setSelectedStation(null);
-                        push('ACTIVATION_SCAN', { stationId: selectedStation.station.id });
+                        push('ACTIVATION_CHOOSE_CONNECTOR', {
+                          stationId: selectedStation.station.id,
+                          station: selectedStation.station,
+                        });
                       }}
                     >
                       Start Now
@@ -468,4 +510,3 @@ export function DiscoverScreen(): React.ReactElement {
     </div>
   );
 }
-

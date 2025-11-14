@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import { Settings, Bell, History as HistoryIcon, Home, Heart, FileText, Shield, AlarmClock } from 'lucide-react';
+import { Settings, Bell, History as HistoryIcon, Home, Heart, FileText, Shield, AlarmClock, Cpu } from 'lucide-react';
 import { useNavigation } from '../../core';
 
 export function ProfileScreen(): React.ReactElement {
@@ -61,6 +61,12 @@ export function ProfileScreen(): React.ReactElement {
         className="h-11 rounded-xl border border-slate-300 bg-white text-slate-700 inline-flex items-center gap-2 px-3 hover:bg-slate-50 transition-colors"
       >
         <Shield className="h-4 w-4" /> Privacy & Support
+      </button>
+      <button
+        onClick={() => push('PROFILE_PROJECT_PREVIEW')}
+        className="h-11 rounded-xl border border-slate-300 bg-white text-slate-700 inline-flex items-center gap-2 px-3 hover:bg-slate-50 transition-colors"
+      >
+        <Cpu className="h-4 w-4" /> EVzone Preview
       </button>
     </div>
   );

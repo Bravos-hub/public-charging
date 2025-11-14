@@ -44,6 +44,10 @@ interface AppState {
     graceWarning: boolean;
     graceWarnMinutes: number; // 5 means 5 min before end
   };
+  drPeak: {
+    active: boolean;
+    until?: string; // 'HH:MM'
+  };
 }
 
 interface AppContextValue extends AppState {
@@ -57,6 +61,7 @@ interface AppContextValue extends AppState {
   setFavorites: React.Dispatch<React.SetStateAction<FavoriteStation[]>>;
   setNotifications: React.Dispatch<React.SetStateAction<AppState['notifications']>>;
   setReminderPrefs: React.Dispatch<React.SetStateAction<AppState['reminderPrefs']>>;
+  setDrPeak: React.Dispatch<React.SetStateAction<AppState['drPeak']>>;
 }
 
 const AppCtx = createContext<AppContextValue | null>(null);
@@ -129,6 +134,7 @@ export function AppProvider({ children }: AppProviderProps): React.ReactElement 
     graceWarning: true,
     graceWarnMinutes: 5,
   });
+  const [drPeak, setDrPeak] = useState<AppState['drPeak']>({ active: false });
 
   const sdk = useMemo(() => {
     const getToken: GetToken = () => auth.token;
@@ -157,8 +163,10 @@ export function AppProvider({ children }: AppProviderProps): React.ReactElement 
       setNotifications,
       reminderPrefs,
       setReminderPrefs,
+      drPeak,
+      setDrPeak,
     }),
-    [auth, vehicle, filters, bookingDraft, mobileDraft, session, wallet, favorites, notifications, reminderPrefs]
+    [auth, vehicle, filters, bookingDraft, mobileDraft, session, wallet, favorites, notifications, reminderPrefs, drPeak]
   );
 
   return (

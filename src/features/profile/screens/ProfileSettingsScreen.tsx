@@ -4,14 +4,14 @@
  */
 
 import React, { useState } from 'react';
-import { ArrowLeft, User, Mail, Phone, Lock, Shield, LogOut, Save, Info } from 'lucide-react';
+import { ArrowLeft, User, Mail, Phone, Lock, Shield, LogOut, Save, Info, Zap } from 'lucide-react';
 import { EVZ_COLORS } from '../../../core/utils/constants';
 import { useNavigation } from '../../../core';
 import { useApp } from '../../../core';
 
 export function ProfileSettingsScreen(): React.ReactElement {
   const { back } = useNavigation();
-  const { auth } = useApp();
+  const { auth, drPeak, setDrPeak } = useApp();
   const user = auth.user;
   
   // Form state
@@ -55,6 +55,42 @@ export function ProfileSettingsScreen(): React.ReactElement {
           <div className="w-5" />
         </div>
       </div>
+
+        {/* Pricing & Tariffs */}
+        <div className="mb-6">
+          <div className="text-sm font-semibold text-slate-800 mb-4">Pricing & Tariffs</div>
+          <div className="grid gap-3">
+            <button
+              onClick={() => setDrPeak((s) => ({ ...s, active: !s.active }))}
+              className="w-full h-11 px-3 rounded-lg border border-slate-300 bg-white text-slate-700 inline-flex items-center justify-between hover:bg-slate-50 transition-colors"
+            >
+              <div className="inline-flex items-center gap-2">
+                <Zap className="h-4 w-4 text-slate-500" />
+                <span className="text-[13px]">DR Peak event banner</span>
+              </div>
+              <input
+                type="checkbox"
+                checked={!!drPeak.active}
+                readOnly
+                className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 focus:ring-2"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </button>
+            <div>
+              <label className="block text-xs text-slate-600 mb-1.5">DR Peak until</label>
+              <input
+                type="time"
+                value={drPeak.until || ''}
+                onChange={(e) => setDrPeak((s) => ({ ...s, until: e.target.value }))}
+                className="w-full h-11 px-3 rounded-lg border border-slate-300 bg-white text-[13px] text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent"
+              />
+              <div className="mt-2 text-xs text-slate-500 flex items-start gap-2">
+                <Info className="h-4 w-4 mt-0.5" />
+                <span>Shows a peak pricing banner on Discover. Use for DR events/testing.</span>
+              </div>
+            </div>
+          </div>
+        </div>
 
       <main className="max-w-md mx-auto px-4 py-6 pb-24">
         {/* Account Section */}
@@ -164,4 +200,3 @@ export function ProfileSettingsScreen(): React.ReactElement {
     </div>
   );
 }
-

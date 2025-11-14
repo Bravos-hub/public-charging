@@ -16,7 +16,7 @@ The zip file contains **79 React components** for a comprehensive EV charging mo
 - **Lucide React** (icons)
 - **EventSource/SSE** (real-time updates)
 - **Service Worker** (PWA support)
-- **i18n** (internationalization)
+
 
 ### Component Categories
 
@@ -195,10 +195,6 @@ src/
    - User data
    - API responses
 
-### Phase 3: Core Components (Priority: HIGH)
-1. Convert app shell to TypeScript
-2. Convert map wrapper component
-3. Create shared UI components (Header, BottomNav, etc.)
 
 ### Phase 4: Feature Integration (Priority: MEDIUM)
 1. **Discovery** - Map, list, filters
@@ -210,32 +206,15 @@ src/
 7. **Profile** - Settings, preferences
 
 ### Phase 5: Utilities & Polish (Priority: LOW)
-1. Service worker integration
-2. Calendar utilities
-3. Error handling
-4. Loading states
-5. Offline support
+Service worker integration
+Calendar utilities
+Error handling
+Loading states
+Offline support
 
 ---
 
-## 📦 Required Dependencies
 
-```json
-{
-  "dependencies": {
-    "framer-motion": "^10.x",
-    "lucide-react": "^0.x",
-    "react-router-dom": "^6.x"  // Optional: for proper routing
-  },
-  "devDependencies": {
-    "tailwindcss": "^3.x",
-    "postcss": "^8.x",
-    "autoprefixer": "^10.x"
-  }
-}
-```
-
----
 
 ## 🎯 Key Integration Points
 

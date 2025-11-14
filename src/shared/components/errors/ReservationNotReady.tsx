@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { AlertCircle, Calendar, MapPin, Info } from 'lucide-react';
+import { EVZ_COLORS } from '../../../core/utils/constants';
 
 function msToParts(ms: number): { h: number; m: number; s: number } {
   const total = Math.max(0, Math.floor(ms / 1000));
@@ -9,9 +10,26 @@ function msToParts(ms: number): { h: number; m: number; s: number } {
   return { h, m, s };
 }
 
-export function ReservationNotReady(): React.ReactElement {
-  const station = { name: 'Central Hub — Downtown Mall' };
-  const startAt = useMemo(() => Date.now() + 7 * 60 * 1000 + 20 * 1000, []);
+interface Props {
+  stationName?: string;
+  startTime?: Date | string | number; // when the reservation becomes active
+  onViewBooking?: () => void;
+  onOk?: () => void;
+  onChangeTime?: () => void;
+}
+
+export function ReservationNotReady({
+  stationName = 'Central Hub — Downtown Mall',
+  startTime,
+  onViewBooking,
+  onOk,
+  onChangeTime,
+}: Props): React.ReactElement {
+  const startAt = useMemo(() => {
+    if (startTime instanceof Date) return startTime.getTime();
+    if (typeof startTime === 'string' || typeof startTime === 'number') return new Date(startTime).getTime();
+    return Date.now() + 7 * 60 * 1000 + 20 * 1000; // default demo countdown ~7m20s
+  }, [startTime]);
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 1000);
@@ -31,7 +49,7 @@ export function ReservationNotReady(): React.ReactElement {
   return (
     <div className="min-h-[100dvh] bg-white">
       {/* Green banner at the top */}
-      <div className="bg-green-600 px-4 py-3 flex items-center gap-2">
+      <div className="px-4 py-3 flex items-center gap-2" style={{ backgroundColor: EVZ_COLORS.green }}>
         <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center">
           <AlertCircle className="h-4 w-4 text-green-600" />
         </div>
@@ -57,7 +75,7 @@ export function ReservationNotReady(): React.ReactElement {
             <div className="text-[11px] text-slate-600 mb-1">Station</div>
             <div className="text-[13px] font-semibold inline-flex items-center gap-1.5">
               <MapPin className="h-4 w-4 text-slate-900" />
-              <span>{station.name}</span>
+              <span>{stationName}</span>
             </div>
           </div>
 
@@ -91,15 +109,15 @@ export function ReservationNotReady(): React.ReactElement {
 
         {/* Action buttons */}
         <div className="mt-4 grid grid-cols-2 gap-3">
-          <button className="h-10 rounded-xl border border-slate-300 bg-white text-slate-700 font-medium hover:bg-slate-50 transition-colors">
+          <button onClick={onViewBooking} className="h-10 rounded-xl border border-slate-300 bg-white text-slate-700 font-medium hover:bg-slate-50 transition-colors">
             View Booking
           </button>
-          <button className="h-10 rounded-xl text-white font-semibold bg-orange-500 hover:bg-orange-600 transition-colors">
+          <button onClick={onOk} className="h-10 rounded-xl text-white font-semibold bg-orange-500 hover:bg-orange-600 transition-colors">
             OK
           </button>
         </div>
         <div className="mt-3">
-          <button className="h-10 w-full rounded-xl border border-slate-300 bg-white text-slate-700 font-medium hover:bg-slate-50 transition-colors">
+          <button onClick={onChangeTime} className="h-10 w-full rounded-xl border border-slate-300 bg-white text-slate-700 font-medium hover:bg-slate-50 transition-colors">
             Change Time
           </button>
         </div>
@@ -107,4 +125,3 @@ export function ReservationNotReady(): React.ReactElement {
     </div>
   );
 }
-

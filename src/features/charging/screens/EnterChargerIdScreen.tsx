@@ -34,6 +34,15 @@ export function EnterChargerIdScreen(): React.ReactElement {
 
     setError('');
     
+    // If user has a reservation with a future start, gate to Reservation Not Ready
+    const start = route.params?.booking?.startTime || route.params?.startTime;
+    if (start && Date.now() < new Date(start).getTime()) {
+      push('RESERVATION_NOT_READY', {
+        ...route.params,
+        startTime: new Date(start),
+      });
+      return;
+    }
     // Navigate to prepayment screen with the entered ID and connector data
     push('PREPAID_CHARGING', {
       ...route.params,
@@ -100,4 +109,3 @@ export function EnterChargerIdScreen(): React.ReactElement {
     </div>
   );
 }
-

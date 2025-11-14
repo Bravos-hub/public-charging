@@ -198,6 +198,30 @@ interface ChargingSession {
 
 ---
 
+## ℹ️ Clarifying Notes
+
+- Re-exports for screens
+  - `src/features/discovery/screens/DiscoverScreen.tsx` re-exports from `src/app/screens/DiscoverScreen.tsx` for a consistent import path within features.
+  - `src/app/screens/WalletScreen.tsx` re-exports from `src/features/wallet/screens/WalletScreen.tsx` for app-shell routing cohesion.
+  - These re-exports are intentional and align with the mapping.
+
+- Map abstraction exports
+  - `src/features/discovery/components/MapWrapper.tsx` exposes the primary map abstraction as a named export `MapSurface` (used by Discover). It also has a default export `MapWrapperSearch` as a lightweight demo/search wrapper.
+  - Consumers should import `{ MapSurface }` for the core map layer.
+
+- Utilities export names (not filename-based)
+  - `src/core/sdk/sse.ts` → `createSseClient`
+  - `src/core/utils/i18n.ts` → `t`, `setLang`, `n`, `d`, `getCurrentLang`
+  - `src/core/utils/calendar.ts` → `makeIcs`
+  - `src/core/utils/serviceWorker.ts` → `register`, `unregister`
+  - These are correct and do not need to mirror the filenames.
+
+- Filters naming consistency
+  - Both `NetworkFilter.tsx` and `NetworksFilter.tsx` exist; the mapping targets `src/shared/components/filters/NetworkFilter.tsx`.
+  - Both `RatingFilter.tsx` and `UserRatingFilter.tsx` exist; the mapping targets `src/shared/components/filters/RatingFilter.tsx`.
+  - Keep imports consistent with the mapping to avoid confusion.
+
+
 ## 🔧 Quick Setup Commands
 
 ```bash
@@ -211,4 +235,3 @@ npx tailwindcss init -p
 # Start development
 npm start
 ```
-

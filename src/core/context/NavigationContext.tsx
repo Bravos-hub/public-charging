@@ -34,6 +34,7 @@ export const ROUTES = {
   STATION_AMENITIES: { title: 'Amenities & Chat' },
   STATION_RATE: { title: 'Rate Station' },
   STATION_REPORT: { title: 'Report a Problem' },
+  RESERVATION_NOT_READY: { title: 'Reservation Not Ready' },
   
   // Booking flows
   BOOK_FIXED_TIME: { title: 'Reserve Station' },
@@ -57,6 +58,7 @@ export const ROUTES = {
   CHARGING_COMPLETE: { title: 'Charging Complete' },
   POSTPAID_PAYMENT: { title: 'Payment — Fixed (Postpaid)' },
   CHARGING_STOP: { title: 'Stop Charging' },
+  CHARGER_UNAVAILABLE: { title: 'Charger Unavailable' },
   
   // Wallet flows
   WALLET_ADD_METHOD: { title: 'Add Payment Method' },
@@ -68,6 +70,8 @@ export const ROUTES = {
   PROFILE_SETTINGS: { title: 'Settings' },
   PROFILE_NOTIFICATIONS: { title: 'Notifications' },
   PROFILE_LANGUAGE: { title: 'Language & Units' },
+  PROFILE_TEST_NOTIFICATION: { title: 'Test Notification' },
+  PROFILE_PROJECT_PREVIEW: { title: 'EVzone Preview' },
   PROFILE_REMINDERS: { title: 'Reminder Preferences' },
   PROFILE_FAVORITES: { title: 'Favorites' },
   
@@ -94,6 +98,7 @@ export const ROUTES = {
   TERMS_OF_SERVICE: { title: 'Terms of Service' },
   PRIVACY_POLICY: { title: 'Privacy Policy' },
   PRIVACY_SUPPORT: { title: 'Privacy & Support' },
+  PRICING_TARIFFS: { title: 'Pricing & Tariffs' },
   
   // System / Status
   SYSTEM_OFFLINE: { title: 'Offline' },
@@ -132,11 +137,12 @@ export function NavigationProvider({
   );
 
   // Expose navigation to window for backward compatibility
+  // Use push directly to avoid dependency on nav object (which changes when route changes)
   React.useEffect(() => {
     (window as any).go = (name: string, params?: Record<string, any>) => {
-      nav.push(name, params);
+      setStack((s) => [...s, { name, params }]);
     };
-  }, [nav]);
+  }, []); // Empty deps - we use setStack directly
 
   return <NavCtx.Provider value={nav}>{children}</NavCtx.Provider>;
 }

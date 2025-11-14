@@ -26,7 +26,7 @@ function Row({ icon: Icon, title, subtitle, value, onChange, disabled = false }:
 
 export function NotificationSettingsScreen(): React.ReactElement {
   const { notifications, setNotifications } = useApp();
-  const { back } = useNavigation();
+  const { back, push } = useNavigation();
   const [state, setState] = useState(notifications);
 
   function save(): void {
@@ -76,6 +76,16 @@ export function NotificationSettingsScreen(): React.ReactElement {
           </div>
         </div>
 
+        {/* Test Notification */}
+        <div className="mt-5">
+          <button
+            onClick={() => push('PROFILE_TEST_NOTIFICATION')}
+            className="h-11 w-full rounded-xl border border-slate-300 bg-white text-slate-700"
+          >
+            Send Test Notification
+          </button>
+        </div>
+
         {/* Actions */}
         <div className="mt-5 grid grid-cols-2 gap-3">
           <button onClick={back} className="h-11 rounded-xl border border-slate-300 bg-white text-slate-700">Cancel</button>
@@ -85,4 +95,3 @@ export function NotificationSettingsScreen(): React.ReactElement {
     </div>
   );
 }
-

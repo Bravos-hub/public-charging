@@ -10,7 +10,14 @@ import { useNavigation } from '../../../core';
 import { ReportProblem } from '../components/ReportProblem';
 
 export function ReportProblemScreen(): React.ReactElement {
-  const { back } = useNavigation();
+  const { route, back } = useNavigation();
+
+  // Prefer explicit station name from params; fallback to booking or default demo value
+  const stationName: string =
+    route.params?.stationName ||
+    route.params?.station?.name ||
+    route.params?.booking?.stationName ||
+    'Central Hub — Downtown Mall';
   return (
     <div className="min-h-[100dvh] bg-white text-slate-900">
       <div className="sticky top-0 z-10 w-full" style={{ backgroundColor: EVZ_COLORS.green }}>
@@ -23,9 +30,8 @@ export function ReportProblemScreen(): React.ReactElement {
         </div>
       </div>
       <main className="max-w-md mx-auto px-4 py-4 pb-28">
-        <ReportProblem />
+        <ReportProblem stationName={stationName} />
       </main>
     </div>
   );
 }
-
