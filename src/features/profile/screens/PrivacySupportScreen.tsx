@@ -38,7 +38,7 @@ export function PrivacySupportScreen(): React.ReactElement {
 
   function handleDeleteAccount(): void {
     // In a real app, this would show a confirmation dialog
-    if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+    if (window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
       alert('Account deletion feature coming soon!');
     }
   }
