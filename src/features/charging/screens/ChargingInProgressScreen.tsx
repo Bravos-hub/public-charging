@@ -2,7 +2,7 @@
  * Charging In Progress Screen (TypeScript)
  */
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { ArrowLeft, Zap, Gauge, Clock3, Fuel, AlertTriangle } from 'lucide-react';
 import { EVZ_COLORS } from '../../../core/utils/constants';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -33,6 +33,14 @@ export function ChargingInProgressScreen({
   const [showStopConfirmation, setShowStopConfirmation] = useState(false);
   const pricePerKwh = 3000;
 
+  // Swipe state
+  const [swipeProgress, setSwipeProgress] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const swipeContainerRef = useRef<HTMLDivElement>(null);
+  const startXRef = useRef<number>(0);
+  const currentXRef = useRef<number>(0);
+  const swipeProgressRef = useRef<number>(0);
+
   useEffect(() => {
     const id = setInterval(() => {
       setPercent((p) => Math.min(100, +(p + 0.4).toFixed(1)));
@@ -47,6 +55,83 @@ export function ChargingInProgressScreen({
     [start]
   );
   const duration = useMemo(() => formatDuration(Date.now() - start), [start]);
+
+  // Swipe handlers
+  function handleSwipeStart(e: React.TouchEvent | React.MouseEvent): void {
+    e.preventDefault();
+    setIsDragging(true);
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    startXRef.current = clientX;
+    currentXRef.current = clientX;
+  }
+
+  function updateSwipeProgress(clientX: number): void {
+    if (!swipeContainerRef.current) return;
+    
+    const container = swipeContainerRef.current;
+    const containerWidth = container.offsetWidth;
+    const buttonWidth = 220; // Button width (increased for text)
+    const maxDrag = Math.max(1, containerWidth - buttonWidth);
+    
+    const deltaX = clientX - startXRef.current;
+    const progress = Math.max(0, Math.min(1, deltaX / maxDrag));
+    
+    swipeProgressRef.current = progress;
+    setSwipeProgress(progress);
+  }
+
+  function handleSwipeEnd(): void {
+    if (!isDragging) return;
+    
+    const finalProgress = swipeProgressRef.current;
+    setIsDragging(false);
+    
+    // If swiped more than 85%, trigger the action
+    if (finalProgress >= 0.85) {
+      setShowStopConfirmation(true);
+    }
+    
+    // Reset swipe progress
+    setTimeout(() => {
+      setSwipeProgress(0);
+      swipeProgressRef.current = 0;
+    }, 300);
+  }
+
+  // Add global mouse/touch listeners when dragging
+  useEffect(() => {
+    if (!isDragging) return;
+
+    function handleMouseMove(e: MouseEvent): void {
+      e.preventDefault();
+      updateSwipeProgress(e.clientX);
+    }
+
+    function handleMouseUp(): void {
+      handleSwipeEnd();
+    }
+
+    function handleTouchMove(e: TouchEvent): void {
+      e.preventDefault();
+      updateSwipeProgress(e.touches[0].clientX);
+    }
+
+    function handleTouchEnd(): void {
+      handleSwipeEnd();
+    }
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+    window.addEventListener('touchmove', handleTouchMove, { passive: false });
+    window.addEventListener('touchend', handleTouchEnd);
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [isDragging]);
 
   return (
     <div className="min-h-[100dvh] bg-white text-slate-900">
@@ -109,15 +194,52 @@ export function ChargingInProgressScreen({
 
         {/* Swipe to End */}
         <div className="mt-6">
-          <div className="h-12 rounded-full bg-slate-100 border border-slate-200 grid place-items-center">
-            <button
-              className="h-10 px-6 rounded-full text-white font-medium inline-flex items-center gap-2"
-              style={{ backgroundColor: EVZ_COLORS.orange }}
-              onClick={() => setShowStopConfirmation(true)}
+          <motion.div
+            ref={swipeContainerRef}
+            className="relative h-12 rounded-xl border border-slate-200 overflow-hidden cursor-grab active:cursor-grabbing"
+            onMouseDown={handleSwipeStart}
+            onTouchStart={handleSwipeStart}
+            animate={{
+              backgroundColor: swipeProgress > 0.3
+                ? `rgba(247, 127, 0, ${0.1 + swipeProgress * 0.15})`
+                : 'rgb(241, 245, 249)',
+            }}
+            transition={{ duration: 0.2 }}
+          >
+            <motion.div
+              className="absolute left-0 top-0 h-full rounded-xl text-white font-medium inline-flex items-center justify-center gap-2 select-none px-5 whitespace-nowrap"
+              style={{
+                width: '220px',
+              }}
+              animate={{
+                x: swipeProgress * (swipeContainerRef.current ? Math.max(0, swipeContainerRef.current.offsetWidth - 220) : 0),
+                backgroundColor: (() => {
+                  // Start: Orange #f77f00 (rgb(247, 127, 0))
+                  // End: Green #03cd8c (rgb(3, 205, 140))
+                  if (swipeProgress <= 0.3) {
+                    return EVZ_COLORS.orange; // rgb(247, 127, 0)
+                  }
+                  const progress = (swipeProgress - 0.3) / 0.7; // Normalize 0.3-1.0 to 0-1
+                  const r = Math.floor(247 - progress * 244); // 247 -> 3
+                  const g = Math.floor(127 + progress * 78);  // 127 -> 205
+                  const b = Math.floor(0 + progress * 140);    // 0 -> 140
+                  return `rgb(${r}, ${g}, ${b})`;
+                })(),
+              }}
+              transition={isDragging ? { type: 'tween', duration: 0 } : { type: 'spring', stiffness: 300, damping: 30 }}
             >
-              <Zap className="h-4 w-4" /> Swipe to End Session
-            </button>
-          </div>
+              <motion.div
+                animate={{
+                  scale: swipeProgress > 0.75 ? 1.15 : 1,
+                  rotate: swipeProgress > 0.8 ? [0, -10, 10, 0] : 0,
+                }}
+                transition={{ duration: 0.2 }}
+              >
+                <Zap className="h-4 w-4 flex-shrink-0" />
+              </motion.div>
+              <span className="text-[13px] font-medium">Swipe to End Session</span>
+            </motion.div>
+          </motion.div>
         </div>
       </main>
 
@@ -164,7 +286,10 @@ export function ChargingInProgressScreen({
                       style={{ backgroundColor: EVZ_COLORS.orange }}
                       onClick={() => {
                         setShowStopConfirmation(false);
-                        onStop?.();
+                        // Small delay to allow modal to close smoothly
+                        setTimeout(() => {
+                          onStop?.();
+                        }, 200);
                       }}
                     >
                       Stop Charging
