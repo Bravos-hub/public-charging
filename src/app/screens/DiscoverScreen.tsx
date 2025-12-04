@@ -3,8 +3,8 @@
  * Map view with charging stations - Fixed Stations and Mobile Charging toggle
  */
 
-import React, { useState } from 'react';
-import { MapPin, Filter, Layers, Crosshair, QrCode, Zap } from 'lucide-react';
+import React, { useState, useMemo, useRef } from 'react';
+import { MapPin, Filter, Layers, Crosshair, QrCode, Zap, Search, X, Star, Bolt, Navigation2 } from 'lucide-react';
 import { useNavigation } from '../../core';
 import { EVZ_COLORS } from '../../core/utils/constants';
 import type { Station } from '../../core';
@@ -120,12 +120,72 @@ const STATION_DATA: Record<number, Station> = {
 // Placeholder for user's location in Mobile Station mode
 const MOBILE_USER_LOCATION: UserLocation = { top: '52%', left: '50%' };
 
+// Calculate distance (mock - in real app, use geolocation)
+function calculateDistance(stationId: number): string {
+  const distances: Record<number, string> = {
+    1: '0.8 km',
+    2: '4.2 km',
+    3: '6.5 km',
+    4: '10 km',
+    5: '12.5 km',
+  };
+  return distances[stationId] || '0 km';
+}
+
 export function DiscoverScreen(): React.ReactElement {
   const { push } = useNavigation();
   const [stationMode, setStationMode] = useState<StationMode>('fixed');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [selectedStation, setSelectedStation] = useState<{ station: Station; distance: string; pointId: number } | null>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const isFixed = stationMode === 'fixed';
   const isMobile = stationMode === 'mobile';
+
+  // Get stations to display (all or filtered)
+  const stationsToDisplay = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return STATION_POINTS;
+    }
+
+    const query = searchQuery.toLowerCase().trim();
+    return STATION_POINTS.filter((point) => {
+      const station = STATION_DATA[point.id];
+      if (!station) return false;
+
+      // Search by name
+      const nameMatch = station.name.toLowerCase().includes(query);
+      
+      // Search by location/address
+      const locationMatch = station.address.toLowerCase().includes(query);
+      
+      // Search by availability status
+      const statusMatch = 
+        (query === 'available' && point.status === 'available') ||
+        (query === 'in use' && point.status === 'inUse') ||
+        (query === 'unavailable' && point.status === 'unavailable') ||
+        (query === 'busy' && point.status === 'inUse') ||
+        (query === 'free' && point.status === 'available');
+      
+      // Search by availability count (e.g., "3 available", "available 3")
+      const availMatch = 
+        query.includes('available') && station.availability.available > 0 ||
+        /^\d+\s*available/.test(query) && station.availability.available >= parseInt(query) ||
+        /available\s*\d+/.test(query) && station.availability.available >= parseInt(query.replace(/\D/g, ''));
+      
+      return nameMatch || locationMatch || statusMatch || availMatch;
+    });
+  }, [searchQuery]);
+
+  // Get station data for list display
+  const stationsListData = useMemo(() => {
+    return stationsToDisplay.map((point) => ({
+      point,
+      station: STATION_DATA[point.id],
+      distance: calculateDistance(point.id),
+    })).filter((item) => item.station !== undefined);
+  }, [stationsToDisplay]);
 
   function handleFilterClick(): void {
     push('FILTERS');
@@ -149,7 +209,41 @@ export function DiscoverScreen(): React.ReactElement {
   function handleStationClick(stationId: number): void {
     const station = STATION_DATA[stationId];
     if (station) {
-      push('STATION_DETAILS', { station, stationId: station.id });
+      const distance = calculateDistance(stationId);
+      setSelectedStation({ station, distance, pointId: stationId });
+      setIsSearchFocused(false); // Close bottom sheet when showing popup
+    }
+  }
+
+  function handleClosePopup(): void {
+    setSelectedStation(null);
+  }
+
+  function handleViewDetails(): void {
+    if (selectedStation) {
+      push('STATION_DETAILS', { station: selectedStation.station, stationId: selectedStation.station.id });
+      setSelectedStation(null);
+    }
+  }
+
+  function handleBook(): void {
+    if (selectedStation) {
+      push('BOOK_FIXED_TIME', { stationId: selectedStation.station.id, station: selectedStation.station });
+      setSelectedStation(null);
+    }
+  }
+
+  function handleNavigate(): void {
+    if (selectedStation) {
+      const { lat, lng } = selectedStation.station.location;
+      window.open(`https://maps.google.com/?q=${lat},${lng}`, '_blank');
+    }
+  }
+
+  function handleStartNow(): void {
+    if (selectedStation) {
+      push('ACTIVATION_CHOOSE_CONNECTOR', { stationId: selectedStation.station.id, station: selectedStation.station });
+      setSelectedStation(null);
     }
   }
 
@@ -190,7 +284,7 @@ export function DiscoverScreen(): React.ReactElement {
 
             {/* Station markers (colored pins for availability) - only in Fixed mode */}
             {isFixed &&
-              STATION_POINTS.map((point) => {
+              stationsToDisplay.map((point) => {
                 const color =
                   point.status === 'available'
                     ? '#10b981' // green
@@ -293,17 +387,133 @@ export function DiscoverScreen(): React.ReactElement {
               </div>
             )}
 
-            {/* Bottom search input (fixed mode only) */}
-            {isFixed && (
-              <div className="absolute inset-x-0 z-20" style={{ bottom: 24 }}>
-                <div className="px-4">
-                  <div className="h-12 rounded-xl bg-white shadow border border-slate-200 flex items-center px-4 text-[13px] text-slate-600">
-                    Find EV Charging Station…
-                  </div>
+            {/* Bottom sheet with nearby stations - shown when search is focused */}
+            {isFixed && isSearchFocused && (
+              <div 
+                className="absolute inset-x-0 z-30 bg-white rounded-t-3xl shadow-2xl transition-transform duration-300"
+                style={{ bottom: 88, maxHeight: 'calc(100% - 100px)' }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Drag handle */}
+                <div className="py-3 grid place-items-center">
+                  <div className="h-1.5 w-12 rounded-full bg-slate-300" />
+                </div>
+
+                {/* Header */}
+                <div className="px-4 pb-3">
+                  <h3 className="text-[15px] font-semibold text-slate-900">
+                    {searchQuery ? 'Search Results' : 'Nearby Chargers'}
+                  </h3>
+                  <p className="text-[12px] text-slate-500 mt-0.5">
+                    {stationsListData.length} station{stationsListData.length !== 1 ? 's' : ''} found
+                  </p>
+                </div>
+
+                {/* Stations list */}
+                <div className="px-4 pb-4 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 250px)' }}>
+                  {stationsListData.length === 0 ? (
+                    <div className="py-8 text-center text-slate-500 text-[13px]">
+                      No stations found matching "{searchQuery}"
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {stationsListData.map(({ point, station, distance }) => {
+                        if (!station) return null;
+                        const availText = `${station.availability.available}/${station.availability.total}`;
+                        
+                        return (
+                          <button
+                            key={point.id}
+                            type="button"
+                              onMouseDown={(e) => {
+                                // Prevent blur from closing the sheet before click
+                                e.preventDefault();
+                              }}
+                              onClick={() => {
+                                handleStationClick(point.id);
+                              }}
+                            className="w-full p-3 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 transition-colors text-left"
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="min-w-0 flex-1">
+                                <div className="text-[13px] font-semibold text-slate-800 truncate flex items-center gap-2">
+                                  <MapPin className="h-4 w-4 flex-shrink-0" />
+                                  <span className="truncate">{station.name}</span>
+                                </div>
+                                <div className="mt-0.5 text-[11px] text-slate-600 flex items-center gap-3 flex-wrap">
+                                  <span>{distance}</span>
+                                  <span className="inline-flex items-center gap-1">
+                                    <Star className="h-3.5 w-3.5 text-amber-400 fill-amber-400" />
+                                    {station.rating.toFixed(1)}
+                                  </span>
+                                  <span>{availText} Available</span>
+                                </div>
+                                <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-slate-700">
+                                  {station.connectors.slice(0, 2).map((connector, i) => (
+                                    <span
+                                      key={i}
+                                      className="px-2 py-0.5 rounded-full bg-slate-100 border border-slate-200 inline-flex items-center gap-1"
+                                    >
+                                      <Bolt className="h-3 w-3" />
+                                      {connector.type} {connector.power}kW
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                              <div className="shrink-0">
+                                <div
+                                  className="h-9 px-3 rounded-lg text-white text-[12px] font-medium flex items-center justify-center"
+                                  style={{ backgroundColor: EVZ_COLORS.orange }}
+                                >
+                                  Details
+                                </div>
+                              </div>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
 
+            {/* Bottom search input (fixed mode only) - always visible */}
+            {isFixed && (
+              <div className="absolute inset-x-0 z-40" style={{ bottom: 24 }}>
+                <div className="px-4">
+                  <div className="h-12 rounded-xl bg-white shadow-lg border border-slate-200 flex items-center px-4 gap-3">
+                    <Search className="h-4 w-4 text-slate-400 flex-shrink-0" />
+                    <input
+                      ref={searchInputRef}
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onFocus={() => setIsSearchFocused(true)}
+                      onBlur={() => {
+                        // Delay to allow clicks on list items
+                        setTimeout(() => setIsSearchFocused(false), 200);
+                      }}
+                      placeholder="Find EV Charging Station…"
+                      className="flex-1 h-full outline-none text-[13px] text-slate-700 placeholder:text-slate-400"
+                    />
+                    {searchQuery && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSearchQuery('');
+                          searchInputRef.current?.focus();
+                        }}
+                        className="h-6 w-6 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-colors flex-shrink-0"
+                        aria-label="Clear search"
+                      >
+                        <X className="h-3.5 w-3.5 text-slate-600" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Mobile actions – shown only in Mobile Station mode */}
             {isMobile && (
@@ -327,6 +537,87 @@ export function DiscoverScreen(): React.ReactElement {
                   </button>
                 </div>
               </div>
+            )}
+
+            {/* Station Popup Modal */}
+            {selectedStation && (
+              <>
+                {/* Backdrop */}
+                <div
+                  className="fixed inset-0 bg-black/50 z-50"
+                  onClick={handleClosePopup}
+                />
+                {/* Popup Card */}
+                <div className="fixed inset-x-4 bottom-24 z-50 max-w-md mx-auto">
+                  <div className="rounded-3xl bg-white border border-slate-200 shadow-2xl p-4">
+                    {/* Top Section: Station name with View Details button */}
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="text-[13px] font-semibold text-slate-800 flex items-center gap-2">
+                          <MapPin className="h-4 w-4 flex-shrink-0 text-slate-500" />
+                          <span className="truncate">{selectedStation.station.name}</span>
+                        </div>
+                        <div className="mt-0.5 text-[11px] text-slate-600 flex items-center gap-3 flex-wrap">
+                          <span>{selectedStation.distance}</span>
+                          <span className="inline-flex items-center gap-1">
+                            <Star className="h-3.5 w-3.5 text-amber-400 fill-amber-400" />
+                            {selectedStation.station.rating.toFixed(1)}
+                          </span>
+                          <span>
+                            {selectedStation.station.availability.available}/{selectedStation.station.availability.total} Available
+                          </span>
+                        </div>
+                      </div>
+                      <button
+                        className="h-8 px-3 rounded-lg text-white text-[12px] font-medium shrink-0"
+                        style={{ backgroundColor: EVZ_COLORS.orange }}
+                        onClick={handleViewDetails}
+                      >
+                        View Details
+                      </button>
+                    </div>
+
+                    {/* Middle Section: Connector types with Book button */}
+                    <div className="mt-2 flex items-center justify-between gap-3">
+                      <div className="flex flex-wrap gap-2 text-[11px] text-slate-700">
+                        {selectedStation.station.connectors.slice(0, 2).map((connector, i) => (
+                          <span
+                            key={i}
+                            className="px-2 py-0.5 rounded-full bg-slate-100 border border-slate-200 inline-flex items-center gap-1"
+                          >
+                            <Bolt className="h-3 w-3" />
+                            {connector.type} {connector.power}kW
+                          </span>
+                        ))}
+                      </div>
+                      <button
+                        className="h-8 px-3 rounded-lg border border-slate-300 bg-white text-[12px] text-slate-700 shrink-0"
+                        onClick={handleBook}
+                      >
+                        Book
+                      </button>
+                    </div>
+
+                    {/* Bottom Section: Navigate and Start Now buttons */}
+                    <div className="mt-3 grid grid-cols-2 gap-3">
+                      <button
+                        className="h-10 rounded-xl border border-slate-300 bg-white text-slate-700 inline-flex items-center justify-center gap-2 text-[13px] font-medium"
+                        onClick={handleNavigate}
+                      >
+                        <Navigation2 className="h-4 w-4" />
+                        Navigate
+                      </button>
+                      <button
+                        className="h-10 rounded-xl text-white font-medium text-[13px]"
+                        style={{ backgroundColor: EVZ_COLORS.orange }}
+                        onClick={handleStartNow}
+                      >
+                        Start Now
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </>
             )}
       </div>
     </div>

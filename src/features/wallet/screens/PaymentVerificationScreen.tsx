@@ -11,6 +11,8 @@ import { useNavigation } from '../../../core';
 export function PaymentVerificationScreen(): React.ReactElement {
   const { route, back } = useNavigation();
   const frameRef = useRef<HTMLIFrameElement | null>(null);
+  // Status is set but not currently used in UI - kept for future functionality
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [status, setStatus] = useState<'challenge' | 'success' | 'failed'>('challenge');
   
   // Get challenge URL from route params

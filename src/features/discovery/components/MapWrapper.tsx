@@ -63,7 +63,8 @@ export function MapSurface({
     }
     const id = setInterval(handle, 2000); // stub
     return () => clearInterval(id);
-  }, [center, zoom, onRegionChange]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [center.lat, center.lng, zoom, onRegionChange]);
 
   // Calculate marker positions (simplified - in real app, use map projection)
   const markerPositions = useMemo(() => {

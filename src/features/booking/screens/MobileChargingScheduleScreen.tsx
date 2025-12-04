@@ -5,7 +5,6 @@
 
 import React, { useMemo, useState, useEffect } from 'react';
 import {
-  Calendar,
   Clock,
   MapPin,
   Globe2,
