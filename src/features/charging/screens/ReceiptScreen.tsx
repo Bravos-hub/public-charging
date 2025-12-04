@@ -4,7 +4,7 @@
  */
 
 import React, { useMemo, useRef } from 'react';
-import { ArrowLeft, Share2, Download, MapPin, Zap, Gauge, Clock, Calendar, Car } from 'lucide-react';
+import { ArrowLeft, Share2, Download } from 'lucide-react';
 import { EVZ_COLORS } from '../../../core/utils/constants';
 import { useNavigation } from '../../../core';
 import type { ChargingSession, Station, Connector, Booking } from '../../../core/types';
@@ -139,25 +139,41 @@ export function ReceiptScreen(): React.ReactElement {
     
     shareText += `Subtotal: UGX ${receiptData.subtotal.toLocaleString()}\nTax: UGX ${receiptData.tax.toLocaleString()}\nTotal: UGX ${receiptData.total.toLocaleString()}`;
 
+    const shareTitle = receiptData.type === 'charging' 
+      ? 'EVzone Charging Receipt' 
+      : receiptData.type === 'booking' 
+      ? 'EVzone Booking Receipt' 
+      : 'EVzone Payment Receipt';
+
+    // Try Web Share API first
     if (navigator.share) {
       try {
         await navigator.share({
-          title: receiptData.type === 'charging' ? 'EVzone Charging Receipt' : receiptData.type === 'booking' ? 'EVzone Booking Receipt' : 'EVzone Payment Receipt',
+          title: shareTitle,
           text: shareText,
         });
-      } catch (err) {
-        // User cancelled or error occurred
+        return; // Successfully shared
+      } catch (err: any) {
+        // User cancelled - don't show error
+        if (err.name === 'AbortError') {
+          return;
+        }
+        // For other errors, fall through to PDF download option
         console.error('Error sharing:', err);
       }
-    } else {
-      // Fallback: Copy to clipboard
-      try {
-        await navigator.clipboard.writeText(shareText);
-        alert('Receipt details copied to clipboard!');
-      } catch (err) {
-        console.error('Error copying to clipboard:', err);
-        alert('Unable to share receipt. Please try downloading the PDF instead.');
+    }
+
+    // If Web Share API is not available or failed, generate and download PDF
+    // This is better than copying to clipboard
+    try {
+      await handleDownloadPDF();
+      // Optionally show a message
+      if (window.confirm('Web Share is not available. A PDF has been downloaded. Would you like to share the PDF file?')) {
+        // User can manually share the downloaded PDF
       }
+    } catch (err) {
+      console.error('Error generating PDF for share:', err);
+      alert('Unable to share receipt. Please try downloading the PDF manually using the download button.');
     }
   }
 
@@ -220,129 +236,131 @@ export function ReceiptScreen(): React.ReactElement {
 
       <main className="max-w-md mx-auto px-4 py-6 pb-24">
         {/* Receipt Card */}
-        <div ref={receiptRef} className="p-4 rounded-2xl border border-slate-200 bg-white shadow-sm">
-          {/* Receipt ID */}
-          <div className="mb-4">
-            <div className="text-[12px] text-slate-500 mb-1">Receipt ID</div>
-            <div className="text-[14px] font-semibold text-slate-800">{receiptData.receiptId}</div>
+        <div ref={receiptRef} className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden relative">
+          {/* Watermark - Logo in center of body */}
+          <div 
+            className="absolute inset-0 pointer-events-none flex items-center justify-center"
+            style={{
+              transform: 'translate(-50%, -50%) rotate(-25deg)',
+              left: '50%',
+              top: '50%',
+              zIndex: 0,
+              userSelect: 'none',
+              opacity: 0.07,
+            }}
+          >
+            <img 
+              src="/LANDSCAPE LOGOS-17.png" 
+              alt="EVzone Watermark" 
+              className="h-96 w-auto object-contain"
+            />
           </div>
 
-          {/* Station Information */}
-          <div className="mb-4 pb-4 border-b border-slate-200">
-            <div className="flex items-start gap-2 mb-1">
-              <MapPin className="h-4 w-4 text-slate-600 mt-0.5 flex-shrink-0" />
-              <div className="flex-1">
-                <div className="text-[14px] font-semibold text-slate-800">{receiptData.stationName}</div>
-                <div className="text-[12px] text-slate-600 mt-0.5">{receiptData.stationAddress}</div>
-                <div className="text-[12px] text-slate-500 mt-1">{receiptData.date}</div>
+          {/* Professional Letterhead */}
+          <div className="relative" style={{ borderBottom: '4px solid #F28C1B', zIndex: 1 }}>
+            {/* Logo Header */}
+            <div className="px-6 py-6 flex items-center justify-center">
+              <img 
+                src="/LANDSCAPE LOGOS-17.png" 
+                alt="EVzone Logo" 
+                className="max-h-24 w-auto object-contain"
+              />
+            </div>
+          </div>
+
+          {/* Receipt Content */}
+          <div className="px-6 py-5 relative" style={{ zIndex: 1 }}>
+            <h2 className="text-xl font-semibold mb-4 text-center" style={{ color: '#00A878' }}>Invoice / Receipt</h2>
+            
+            <div className="mb-4 space-y-1">
+              <p className="text-sm"><strong>Date:</strong> {receiptData.date}</p>
+              <p className="text-sm"><strong>Invoice/Receipt No.:</strong> {receiptData.receiptId}</p>
+              <p className="text-sm"><strong>Customer Name:</strong> {route.params?.userName || 'Customer'}</p>
+            </div>
+
+            {/* Invoice Table */}
+            <table className="w-full border-collapse mt-5" style={{ fontSize: '14px' }}>
+              <thead>
+                <tr style={{ background: '#F28C1B', color: 'white' }}>
+                  <th className="p-2.5 text-left">Description</th>
+                  <th className="p-2.5 text-left">Quantity</th>
+                  <th className="p-2.5 text-left">Unit Price</th>
+                  <th className="p-2.5 text-left">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {receiptData.type === 'charging' && (
+                  <tr style={{ background: '#fafafa' }}>
+                    <td className="p-2 border-b border-slate-200">
+                      EV Charging - {receiptData.connectorType}
+                      <div className="text-xs text-slate-500 mt-1">
+                        {receiptData.stationName} • {receiptData.timeRange}
+                      </div>
+                    </td>
+                    <td className="p-2 border-b border-slate-200">{receiptData.energy}</td>
+                    <td className="p-2 border-b border-slate-200">{receiptData.pricePerKwh}</td>
+                    <td className="p-2 border-b border-slate-200 font-semibold">
+                      UGX {receiptData.subtotal.toLocaleString()}
+                    </td>
+                  </tr>
+                )}
+                {receiptData.type === 'booking' && (
+                  <tr style={{ background: '#fafafa' }}>
+                    <td className="p-2 border-b border-slate-200">
+                      Booking Reservation - {receiptData.connectorType}
+                      <div className="text-xs text-slate-500 mt-1">
+                        {receiptData.stationName} • {receiptData.timeRange}
+                      </div>
+                    </td>
+                    <td className="p-2 border-b border-slate-200">1</td>
+                    <td className="p-2 border-b border-slate-200">UGX {receiptData.subtotal.toLocaleString()}</td>
+                    <td className="p-2 border-b border-slate-200 font-semibold">
+                      UGX {receiptData.subtotal.toLocaleString()}
+                    </td>
+                  </tr>
+                )}
+                {receiptData.type === 'payment' && (
+                  <tr style={{ background: '#fafafa' }}>
+                    <td className="p-2 border-b border-slate-200">
+                      Payment - {receiptData.paymentMethod || 'Payment'}
+                    </td>
+                    <td className="p-2 border-b border-slate-200">1</td>
+                    <td className="p-2 border-b border-slate-200">UGX {receiptData.subtotal.toLocaleString()}</td>
+                    <td className="p-2 border-b border-slate-200 font-semibold">
+                      UGX {receiptData.subtotal.toLocaleString()}
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+
+            {/* Totals */}
+            <div className="mt-4 pt-4 border-t-2 border-slate-200">
+              <div className="flex justify-between mb-2">
+                <span className="text-sm text-slate-600">Subtotal</span>
+                <span className="text-sm font-semibold">UGX {receiptData.subtotal.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between mb-2">
+                <span className="text-sm text-slate-600">Tax</span>
+                <span className="text-sm font-semibold">UGX {receiptData.tax.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between pt-2 border-t-2 border-slate-300">
+                <span className="text-base font-bold">Grand Total</span>
+                <span className="text-base font-bold" style={{ color: '#F28C1B' }}>
+                  UGX {receiptData.total.toLocaleString()}
+                </span>
               </div>
             </div>
           </div>
 
-          {/* Parameters Grid */}
-          {receiptData.type === 'charging' && (
-            <div className="grid grid-cols-2 gap-3 mb-4">
-              {/* Connector */}
-              <div className="p-3 rounded-xl border border-slate-200 bg-slate-50">
-                <div className="text-[11px] text-slate-500 flex items-center gap-1.5 mb-1">
-                  <Zap className="h-4 w-4" />
-                  Connector
-                </div>
-                <div className="text-[13px] font-semibold text-slate-800">{receiptData.connectorType}</div>
-              </div>
-
-              {/* Energy */}
-              <div className="p-3 rounded-xl border border-slate-200 bg-slate-50">
-                <div className="text-[11px] text-slate-500 flex items-center gap-1.5 mb-1">
-                  <Gauge className="h-4 w-4" />
-                  Energy
-                </div>
-                <div className="text-[13px] font-semibold text-slate-800">{receiptData.energy}</div>
-              </div>
-
-              {/* Start/End Time */}
-              <div className="p-3 rounded-xl border border-slate-200 bg-slate-50">
-                <div className="text-[11px] text-slate-500 flex items-center gap-1.5 mb-1">
-                  <Clock className="h-4 w-4" />
-                  Start / End
-                </div>
-                <div className="text-[13px] font-semibold text-slate-800">{receiptData.timeRange}</div>
-              </div>
-
-              {/* Price per kWh */}
-              <div className="p-3 rounded-xl border border-slate-200 bg-slate-50">
-                <div className="text-[11px] text-slate-500 mb-1">Price / kWh</div>
-                <div className="text-[13px] font-semibold text-slate-800">{receiptData.pricePerKwh}</div>
-              </div>
-            </div>
-          )}
-
-          {receiptData.type === 'booking' && (
-            <div className="grid grid-cols-2 gap-3 mb-4">
-              {/* Date & Time */}
-              <div className="p-3 rounded-xl border border-slate-200 bg-slate-50">
-                <div className="text-[11px] text-slate-500 flex items-center gap-1.5 mb-1">
-                  <Calendar className="h-4 w-4" />
-                  Date & Time
-                </div>
-                <div className="text-[13px] font-semibold text-slate-800">{receiptData.timeRange}</div>
-              </div>
-
-              {/* Connector */}
-              <div className="p-3 rounded-xl border border-slate-200 bg-slate-50">
-                <div className="text-[11px] text-slate-500 flex items-center gap-1.5 mb-1">
-                  <Zap className="h-4 w-4" />
-                  Connector
-                </div>
-                <div className="text-[13px] font-semibold text-slate-800">{receiptData.connectorType}</div>
-              </div>
-
-              {/* Vehicle */}
-              {receiptData.vehicle && (
-                <div className="p-3 rounded-xl border border-slate-200 bg-slate-50">
-                  <div className="text-[11px] text-slate-500 flex items-center gap-1.5 mb-1">
-                    <Car className="h-4 w-4" />
-                    Vehicle
-                  </div>
-                  <div className="text-[13px] font-semibold text-slate-800">{receiptData.vehicle}</div>
-                </div>
-              )}
-
-              {/* Payment Method */}
-              {receiptData.paymentMethod && (
-                <div className="p-3 rounded-xl border border-slate-200 bg-slate-50">
-                  <div className="text-[11px] text-slate-500 mb-1">Payment Method</div>
-                  <div className="text-[13px] font-semibold text-slate-800">{receiptData.paymentMethod}</div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {receiptData.type === 'payment' && receiptData.paymentMethod && (
-            <div className="mb-4">
-              <div className="p-3 rounded-xl border border-slate-200 bg-slate-50">
-                <div className="text-[11px] text-slate-500 mb-1">Payment Method</div>
-                <div className="text-[13px] font-semibold text-slate-800">{receiptData.paymentMethod}</div>
-              </div>
-            </div>
-          )}
-
-          {/* Cost Summary */}
-          <div className="pt-4 border-t border-slate-200">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[13px] text-slate-600">Subtotal</span>
-              <span className="text-[13px] font-semibold text-slate-800">UGX {receiptData.subtotal.toLocaleString()}</span>
-            </div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[13px] text-slate-600">Tax</span>
-              <span className="text-[13px] font-semibold text-slate-800">UGX {receiptData.tax.toLocaleString()}</span>
-            </div>
-            <div className="pt-2 border-t border-slate-200 mt-2">
-              <div className="flex items-center justify-between">
-                <span className="text-[15px] font-semibold text-slate-800">Total</span>
-                <span className="text-[15px] font-semibold text-slate-800">UGX {receiptData.total.toLocaleString()}</span>
-              </div>
-            </div>
+          {/* Footer */}
+          <div 
+            className="px-6 py-5 text-xs text-center border-t-2"
+            style={{ borderTopColor: '#00A878', color: '#555' }}
+          >
+            <p className="mb-1">Hotline & WeChat: +8617768319897</p>
+            <p className="mb-3">Email: charging@evzonegroup.com | info@evzonegroup.com</p>
+            <p className="mt-3"><strong>Thank you for your business.</strong></p>
           </div>
         </div>
 

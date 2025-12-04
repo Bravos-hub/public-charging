@@ -18,12 +18,14 @@ function formatDuration(ms: number): string {
 interface ChargingInProgressScreenProps {
   sessionId?: string;
   onStop?: () => void;
+  onAutoStop?: () => void; // Called when charging automatically reaches 100%
   onBack?: () => void;
 }
 
 export function ChargingInProgressScreen({
   sessionId,
   onStop,
+  onAutoStop,
   onBack,
 }: ChargingInProgressScreenProps): React.ReactElement {
   // Demo ticking state (does not connect to hardware)
@@ -31,6 +33,7 @@ export function ChargingInProgressScreen({
   const [percent, setPercent] = useState(27);
   const [energyKwh, setEnergyKwh] = useState(5.4);
   const [showStopConfirmation, setShowStopConfirmation] = useState(false);
+  const [hasAutoStopped, setHasAutoStopped] = useState(false);
   const pricePerKwh = 3000;
 
   // Swipe state
@@ -43,11 +46,27 @@ export function ChargingInProgressScreen({
 
   useEffect(() => {
     const id = setInterval(() => {
-      setPercent((p) => Math.min(100, +(p + 0.4).toFixed(1)));
+      setPercent((p) => {
+        const newPercent = Math.min(100, +(p + 0.4).toFixed(1));
+        // Auto-stop when reaching 100%
+        if (newPercent >= 100 && p < 100 && !hasAutoStopped) {
+          setHasAutoStopped(true);
+          // Small delay to show 100% before stopping
+          setTimeout(() => {
+            // Use onAutoStop if provided, otherwise fall back to onStop
+            if (onAutoStop) {
+              onAutoStop();
+            } else {
+              onStop?.();
+            }
+          }, 1500);
+        }
+        return newPercent;
+      });
       setEnergyKwh((e) => +(e + 0.08).toFixed(2));
     }, 1500);
     return () => clearInterval(id);
-  }, []);
+  }, [onStop, onAutoStop, hasAutoStopped]);
 
   const total = useMemo(() => Math.round(energyKwh * pricePerKwh), [energyKwh]);
   const startedAt = useMemo(
@@ -149,11 +168,21 @@ export function ChargingInProgressScreen({
         {/* Progress circle */}
         <div className="mt-2 grid place-items-center">
           <div
-            className="h-44 w-44 rounded-full grid place-items-center"
+            className="h-44 w-44 rounded-full grid place-items-center relative"
             style={{ background: `conic-gradient(${EVZ_COLORS.green} ${percent}%, #e2e8f0 0)` }}
           >
-            <div className="h-36 w-36 rounded-full bg-white grid place-items-center border border-slate-200">
+            <div className="h-36 w-36 rounded-full bg-white grid place-items-center border border-slate-200 relative">
               <div className="text-3xl font-bold text-slate-800">{percent}%</div>
+              {percent >= 100 && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-[11px] font-semibold text-white whitespace-nowrap"
+                  style={{ backgroundColor: EVZ_COLORS.green }}
+                >
+                  Charging Complete
+                </motion.div>
+              )}
             </div>
           </div>
         </div>

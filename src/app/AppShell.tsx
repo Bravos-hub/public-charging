@@ -375,7 +375,12 @@ function AppContent(): React.ReactElement {
               <ChargingInProgressScreen
                 sessionId={route.params?.sessionId}
                 onStop={() => {
-                  // Create session object from route params
+                  // Manual stop - navigate to activity screen
+                  // The confirmation modal in the component will call this after user confirms
+                  replace('ACTIVITY');
+                }}
+                onAutoStop={() => {
+                  // Auto-stop at 100% - navigate to complete screen
                   const session = {
                     id: route.params?.sessionId || `SESSION-${Date.now()}`,
                     stationId: route.params?.stationId || route.params?.station?.id || '1',
