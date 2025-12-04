@@ -1,5 +1,5 @@
 {
-  "name": "public-charging",
+  "name": "evzone-public-charging",
   "version": "0.1.0",
   "private": true,
   "dependencies": {

@@ -4,40 +4,133 @@
     <meta charset="utf-8" />
     <link rel="icon" href="favicon-512.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-    <meta
-      name="description"
-      content="Web site created using create-react-app"
-    />
+    
+    <!-- Primary Meta Tags -->
+    <title>EVzone - Find & Book EV Charging Stations Near You | Electric Vehicle Charging Network</title>
+    <meta name="title" content="EVzone - Find & Book EV Charging Stations Near You | Electric Vehicle Charging Network" />
+    <meta name="description" content="Discover and book EV charging stations near you with EVzone. Real-time availability, multiple connector types (CCS2, Type2, CHAdeMO), mobile charging, and seamless payment options. Find the perfect charging station for your electric vehicle." />
+    <meta name="keywords" content="EV charging stations, electric vehicle charging, EV charging network, find charging stations, book EV charger, CCS2 charging, Type2 charging, mobile EV charging, electric car charging, EV charging app, charging station finder, EVzone" />
+    <meta name="author" content="EVzone" />
+    <meta name="robots" content="index, follow" />
+    <meta name="language" content="English" />
+    <meta name="revisit-after" content="7 days" />
+    <meta name="theme-color" content="#03cd8c" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://evzone.app/" />
+    <meta property="og:title" content="EVzone - Find & Book EV Charging Stations Near You" />
+    <meta property="og:description" content="Discover and book EV charging stations near you with EVzone. Real-time availability, multiple connector types, mobile charging, and seamless payment options." />
+    <meta property="og:image" content="%PUBLIC_URL%/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="EVzone - EV Charging Station Finder" />
+    <meta property="og:site_name" content="EVzone" />
+    <meta property="og:locale" content="en_US" />
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://evzone.app/" />
+    <meta name="twitter:title" content="EVzone - Find & Book EV Charging Stations Near You" />
+    <meta name="twitter:description" content="Discover and book EV charging stations near you with EVzone. Real-time availability, multiple connector types, mobile charging, and seamless payment options." />
+    <meta name="twitter:image" content="%PUBLIC_URL%/og-image.png" />
+    <meta name="twitter:image:alt" content="EVzone - EV Charging Station Finder" />
+    <meta name="twitter:creator" content="@evzone" />
+    <meta name="twitter:site" content="@evzone" />
+    
+    <!-- Additional SEO Meta Tags -->
+    <meta name="application-name" content="EVzone" />
+    <meta name="apple-mobile-web-app-title" content="EVzone" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="format-detection" content="telephone=no" />
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://evzone.app/" />
+    
+    <!-- Favicons and Icons -->
+    <link rel="icon" type="image/png" sizes="512x512" href="favicon-512.png" />
     <link rel="apple-touch-icon" href="apple-touch-icon-180.png" />
-    <!--
-      manifest.json provides metadata used when your web app is installed on a
-      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
-    -->
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <!--
-      Notice the use of %PUBLIC_URL% in the tags above.
-      It will be replaced with the URL of the `public` folder during the build.
-      Only files inside the `public` folder can be referenced from the HTML.
-
-      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
-      work correctly both with client-side routing and a non-root public URL.
-      Learn how to configure a non-root public URL by running `npm run build`.
-    -->
-    <title>React App</title>
+    
+    <!-- Preconnect for Performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "EVzone",
+      "description": "Find and book EV charging stations near you. Real-time availability, multiple connector types, mobile charging, and seamless payment options.",
+      "url": "https://evzone.app",
+      "applicationCategory": "UtilityApplication",
+      "operatingSystem": "Web, iOS, Android",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.5",
+        "ratingCount": "1250"
+      },
+      "provider": {
+        "@type": "Organization",
+        "name": "EVzone",
+        "url": "https://evzone.app",
+        "logo": "https://evzone.app/favicon-512.png",
+        "sameAs": [
+          "https://twitter.com/evzone",
+          "https://facebook.com/evzone",
+          "https://linkedin.com/company/evzone"
+        ]
+      },
+      "featureList": [
+        "Find nearby EV charging stations",
+        "Real-time availability tracking",
+        "Multiple connector types (CCS2, Type2, CHAdeMO, NACS)",
+        "Mobile charging booking",
+        "Station reservations",
+        "Payment integration",
+        "Charging session tracking",
+        "Receipt and history management"
+      ]
+    }
+    </script>
+    
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "EVzone",
+      "url": "https://evzone.app",
+      "logo": "https://evzone.app/favicon-512.png",
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "telephone": "+256-700-000-001",
+        "contactType": "Customer Service",
+        "email": "support@evzone.com"
+      },
+      "sameAs": [
+        "https://twitter.com/evzone",
+        "https://facebook.com/evzone",
+        "https://linkedin.com/company/evzone"
+      ]
+    }
+    </script>
   </head>
   <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <noscript>
+      <div style="padding: 20px; text-align: center; font-family: Arial, sans-serif;">
+        <h1>EVzone - EV Charging Station Finder</h1>
+        <p>You need to enable JavaScript to run this application.</p>
+        <p>EVzone helps you find and book electric vehicle charging stations near you.</p>
+      </div>
+    </noscript>
     <div id="root"></div>
-    <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
-
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
-
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-    -->
   </body>
 </html>

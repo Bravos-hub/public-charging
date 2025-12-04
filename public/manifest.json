@@ -1,25 +1,48 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "EVzone",
+  "name": "EVzone - EV Charging Station Finder",
+  "description": "Find and book EV charging stations near you. Real-time availability, multiple connector types, mobile charging, and seamless payment options.",
   "icons": [
     {
-      "src": "favicon.ico",
-      "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
+      "src": "favicon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
-      "src": "logo192.png",
+      "src": "icon-512-maskable.png",
+      "sizes": "512x512",
       "type": "image/png",
-      "sizes": "192x192"
+      "purpose": "maskable"
     },
     {
-      "src": "logo512.png",
-      "type": "image/png",
-      "sizes": "512x512"
+      "src": "apple-touch-icon-180.png",
+      "sizes": "180x180",
+      "type": "image/png"
     }
   ],
-  "start_url": ".",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "orientation": "portrait",
+  "theme_color": "#03cd8c",
+  "background_color": "#ffffff",
+  "categories": ["utilities", "travel", "navigation"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Find Stations",
+      "short_name": "Find",
+      "description": "Discover nearby EV charging stations",
+      "url": "/discover",
+      "icons": [{ "src": "favicon-512.png", "sizes": "512x512" }]
+    },
+    {
+      "name": "My Activity",
+      "short_name": "Activity",
+      "description": "View charging history and receipts",
+      "url": "/activity",
+      "icons": [{ "src": "favicon-512.png", "sizes": "512x512" }]
+    }
+  ]
 }

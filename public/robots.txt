@@ -1,3 +1,14 @@
 # https://www.robotstxt.org/robotstxt.html
+# EVzone - EV Charging Station Finder
+# Allow all search engines to crawl the site
+
 User-agent: *
-Disallow:
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+
+# Sitemap location
+Sitemap: https://evzone.app/sitemap.xml
+
+# Crawl-delay for respectful crawling
+Crawl-delay: 1

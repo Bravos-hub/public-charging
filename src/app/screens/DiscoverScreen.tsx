@@ -353,17 +353,6 @@ export function DiscoverScreen(): React.ReactElement {
               >
                 <Layers className="h-5 w-5 text-slate-700" />
               </button>
-              {isFixed && (
-                <button
-                  type="button"
-                  onClick={handleScanClick}
-                  title="Scan QR"
-                  className="h-14 w-14 rounded-full text-white shadow-xl grid place-items-center hover:shadow-2xl transition-shadow"
-                  style={{ backgroundColor: EVZ_COLORS.orange }}
-                >
-                  <QrCode className="h-6 w-6" />
-                </button>
-              )}
             </div>
 
             {/* Availability legend – only relevant in Fixed Stations mode */}
@@ -475,6 +464,21 @@ export function DiscoverScreen(): React.ReactElement {
                     </div>
                   )}
                 </div>
+              </div>
+            )}
+
+            {/* QR Code button - positioned just above search bar */}
+            {isFixed && (
+              <div className="absolute right-4 z-40" style={{ bottom: 88 }}>
+                <button
+                  type="button"
+                  onClick={handleScanClick}
+                  title="Scan QR"
+                  className="h-14 w-14 rounded-xl text-white shadow-xl grid place-items-center hover:shadow-2xl transition-shadow"
+                  style={{ backgroundColor: EVZ_COLORS.orange }}
+                >
+                  <QrCode className="h-6 w-6" />
+                </button>
               </div>
             )}
 
