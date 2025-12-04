@@ -3,7 +3,7 @@
  * Thin SDK for REST + SSE with retry/backoff
  */
 
-import type { Booking, BookingDraft, ChargingSession, Station, PaymentIntent, PaymentMethod } from '../types';
+import type { Booking, BookingDraft, ChargingSession, Station, PaymentIntent } from '../types';
 import { createSseClient, type Unsubscribe } from './sse';
 
 export type GetToken = () => string | null;

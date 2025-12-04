@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Star } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { EVZ_COLORS } from '../../../core/utils/constants';
 import { useNavigation, useApp } from '../../../core';
 

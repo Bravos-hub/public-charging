@@ -7,7 +7,7 @@ import React, { useRef, useEffect, useMemo, useState } from 'react';
 import { Search, Crosshair, Layers, Filter } from 'lucide-react';
 import { MapPin } from 'lucide-react';
 import { EVZ_COLORS } from '../../../core/utils/constants';
-import type { Location, Station } from '../../../core/types';
+import type { Location } from '../../../core/types';
 
 export interface MapMarker {
   id: string;
@@ -58,13 +58,12 @@ export function MapSurface({
 
   useEffect(() => {
     // Provider adapter attach point; call onRegionChange when panned/zoomed.
-    const el = ref.current;
     function handle(): void {
       onRegionChange?.({ center, zoom });
     }
     const id = setInterval(handle, 2000); // stub
     return () => clearInterval(id);
-  }, [center.lat, center.lng, zoom, onRegionChange]);
+  }, [center, zoom, onRegionChange]);
 
   // Calculate marker positions (simplified - in real app, use map projection)
   const markerPositions = useMemo(() => {

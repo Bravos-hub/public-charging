@@ -6,7 +6,6 @@ import React, { useMemo, useState } from 'react';
 import { ArrowLeft, MapPin, CreditCard, Wallet, Banknote } from 'lucide-react';
 import { EVZ_COLORS } from '../../../core/utils/constants';
 import { useApp } from '../../../core';
-import type { PaymentMethod } from '../../../core/types';
 
 interface BookingPaymentScreenProps {
   amount: number;

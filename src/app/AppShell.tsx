@@ -43,6 +43,7 @@ import { BookingConfirmationScreen } from '../features/booking/screens/BookingCo
 import { BookingDetailScreen } from '../features/booking/screens/BookingDetailScreen';
 import { MobileChargingLocationScreen } from '../features/booking/screens/MobileChargingLocationScreen';
 import { MobileChargingTimeTargetsScreen } from '../features/booking/screens/MobileChargingTimeTargetsScreen';
+import { MobileChargingScheduleScreen } from '../features/booking/screens/MobileChargingScheduleScreen';
 import { MobileChargingOnTheWayScreen } from '../features/booking/screens/MobileChargingOnTheWayScreen';
 import { QRScanner } from '../features/charging/components/QRScanner';
 import { ChargingReadyScreen } from '../features/charging/screens/ChargingReadyScreen';
@@ -75,6 +76,7 @@ const FULL_SCREEN_ROUTES = new Set([
   'BOOK_MOBILE_LOCATION',
   'BOOK_MOBILE_TIME_TARGETS',
   'BOOK_MOBILE_TIME',
+  'BOOK_MOBILE_SCHEDULE',
   'BOOK_MOBILE_ON_THE_WAY',
   'BOOK_FEE_PAYMENT',
   'BOOK_PAYMENT',
@@ -207,6 +209,7 @@ function AppContent(): React.ReactElement {
             )}
             {route.name === 'BOOK_MOBILE_LOCATION' && <MobileChargingLocationScreen />}
             {route.name === 'BOOK_MOBILE_TIME_TARGETS' && <MobileChargingTimeTargetsScreen />}
+            {route.name === 'BOOK_MOBILE_SCHEDULE' && <MobileChargingScheduleScreen />}
             {route.name === 'BOOK_MOBILE_ON_THE_WAY' && <MobileChargingOnTheWayScreen />}
             {route.name === 'BOOK_MOBILE_TIME' && (
               <TimePicker
@@ -504,14 +507,14 @@ function AppContent(): React.ReactElement {
           untilLabel={drPeak.until || 'today'}
         />
       )}
-      <main className="max-w-md mx-auto h-[calc(100dvh-3.5rem-56px)] overflow-y-auto overscroll-behavior-contain">
+      <main className={`max-w-md mx-auto ${route.name === 'DISCOVER' ? 'h-[calc(100dvh-3.5rem-56px)] overflow-hidden' : 'h-[calc(100dvh-3.5rem-56px)] overflow-y-auto'} overscroll-behavior-contain`}>
         <AnimatePresence mode="wait">
           <motion.div
             key={route.name}
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
-            className="min-h-full"
+            className={route.name === 'DISCOVER' ? 'h-full' : 'min-h-full'}
           >
             {route.name === 'DISCOVER' && <DiscoverScreen />}
             {route.name === 'ACTIVITY' && <ActivityScreen />}

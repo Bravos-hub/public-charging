@@ -3,7 +3,7 @@
  * Allows users to set time window and target state of charge for mobile charging
  */
 
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { ArrowLeft, ChevronDown, ChevronUp, RotateCcw, Clock, Zap } from 'lucide-react';
 import { EVZ_COLORS } from '../../../core/utils/constants';
 import { useNavigation } from '../../../core';

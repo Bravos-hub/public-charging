@@ -62,3 +62,4 @@ After applying these fixes:
 3. The app should load without reload loops
 4. Check the console - you should see warnings if service worker events are blocked (this is expected in dev mode)
 
+

@@ -3,7 +3,7 @@
  */
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { ArrowLeft, Clock, MapPin, Zap } from 'lucide-react';
+import { Clock, MapPin, Zap } from 'lucide-react';
 import { EVZ_COLORS } from '../../../core/utils/constants';
 import { useNavigation } from '../../../core';
 

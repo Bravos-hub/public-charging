@@ -47,7 +47,7 @@ const TERMS = [
 ];
 
 export function TermsOfServiceScreen(): React.ReactElement {
-  const { route, back, push } = useNavigation();
+  const { route, back } = useNavigation();
 
   function handleDecline(): void {
     // Navigate back or to a declined state

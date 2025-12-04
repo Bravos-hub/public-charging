@@ -72,8 +72,8 @@ export function MobileChargingLocationScreen(): React.ReactElement {
       return;
     }
 
-    // Navigate to time & targets screen for mobile charging
-    push('BOOK_MOBILE_TIME_TARGETS', {
+    // Navigate to schedule screen for mobile charging
+    push('BOOK_MOBILE_SCHEDULE', {
       location,
       vehicle: selectedVehicle,
       vehicleId: selectedVehicle.id,

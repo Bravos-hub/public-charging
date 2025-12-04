@@ -13,19 +13,21 @@ export function BookingDetailScreen(): React.ReactElement {
   const { route, back, push } = useNavigation();
   // Prefer full booking object, but allow navigation by bookingId with fallback fields
   const bookingId: string | undefined = route.params?.bookingId;
-  const booking: Booking | undefined = route.params?.booking ||
-    (bookingId
-      ? {
-          id: bookingId,
-          stationId: route.params?.stationId,
-          stationName: route.params?.stationName || 'Central Hub — Downtown Mall',
-          startTime: route.params?.startTime || new Date(),
-          endTime: route.params?.endTime,
-          connectorType: route.params?.connectorType || 'CCS2',
-          status: 'confirmed',
-          mode: 'fixed',
-        }
-      : undefined);
+  const booking = useMemo<Booking | undefined>(() => {
+    return route.params?.booking ||
+      (bookingId
+        ? {
+            id: bookingId,
+            stationId: route.params?.stationId,
+            stationName: route.params?.stationName || 'Central Hub — Downtown Mall',
+            startTime: route.params?.startTime || new Date(),
+            endTime: route.params?.endTime,
+            connectorType: route.params?.connectorType || 'CCS2',
+            status: 'confirmed',
+            mode: 'fixed',
+          }
+        : undefined);
+  }, [route.params, bookingId]);
 
   const data = useMemo(() => {
     if (booking) {

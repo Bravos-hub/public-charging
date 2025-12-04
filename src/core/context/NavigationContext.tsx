@@ -41,6 +41,7 @@ export const ROUTES = {
   BOOK_MOBILE_LOCATION: { title: 'Mobile Charging — Location' },
   BOOK_MOBILE_TIME_TARGETS: { title: 'Mobile — Time & Targets' },
   BOOK_MOBILE_TIME: { title: 'Book Mobile Charging' },
+  BOOK_MOBILE_SCHEDULE: { title: 'Schedule Mobile Charging' },
   BOOK_MOBILE_ON_THE_WAY: { title: 'Mobile charging on the way' },
   BOOK_FEE_PAYMENT: { title: 'Booking Fee — Advance Scheduling' },
   BOOK_PAYMENT: { title: 'Payment' },

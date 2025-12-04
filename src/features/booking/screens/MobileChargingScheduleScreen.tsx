@@ -1,6 +1,6 @@
 /**
- * Booking Time Picker Component (TypeScript)
- * Calendly-style booking interface for charging sessions
+ * Mobile Charging Schedule Screen (TypeScript)
+ * Calendly-style booking interface for mobile charging sessions
  */
 
 import React, { useMemo, useState, useEffect } from 'react';
@@ -8,7 +8,6 @@ import {
   Calendar,
   Clock,
   MapPin,
-  Zap,
   Globe2,
   Bell,
   Mail,
@@ -19,14 +18,6 @@ import {
 } from 'lucide-react';
 import { EVZ_COLORS } from '../../../core/utils/constants';
 import { useNavigation } from '../../../core';
-
-interface TimePickerProps {
-  stationName?: string;
-  mode?: 'fixed' | 'mobile';
-  onModeChange?: (mode: 'fixed' | 'mobile') => void;
-  onTimeSelect?: (time: string, date: Date) => void;
-  onBack?: () => void;
-}
 
 interface TimeSlot {
   id: string;
@@ -288,14 +279,8 @@ function ToggleSwitch({
   );
 }
 
-export function TimePicker({
-  stationName = 'Central Hub',
-  mode: initialMode = 'fixed',
-  onModeChange,
-  onTimeSelect,
-  onBack,
-}: TimePickerProps): React.ReactElement {
-  const { route, push } = useNavigation();
+export function MobileChargingScheduleScreen(): React.ReactElement {
+  const { route, back, push } = useNavigation();
   const today = useMemo(() => stripTime(new Date()), []);
 
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
@@ -304,7 +289,6 @@ export function TimePicker({
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
   const [durationMinutes, setDurationMinutes] = useState(45);
   const [timeZoneId, setTimeZoneId] = useState('Africa/Kampala');
-  const [mode, setMode] = useState<'fixed' | 'mobile'>(initialMode);
 
   const [smsEnabled, setSmsEnabled] = useState(true);
   const [smsOffsetHours, setSmsOffsetHours] = useState(24);
@@ -351,6 +335,8 @@ export function TimePicker({
   }, [selectedSlot, durationMinutes]);
 
   const activeTimeZone = TIME_ZONES.find((z) => z.id === timeZoneId) || TIME_ZONES[0];
+
+  const location = route.params?.location || 'Your current EV location';
 
   useEffect(() => {
     if (!selectedDate || !selectedSlot) {
@@ -429,22 +415,33 @@ export function TimePicker({
   function handleConfirmSession(): void {
     if (!selectedStartDateTime || !selectedEndDateTime || conflictMessage) return;
 
-    // Format time as HH:MM for onTimeSelect callback
-    const timeString = `${selectedSlot!.hour.toString().padStart(2, '0')}:${selectedSlot!.minute.toString().padStart(2, '0')}`;
-    onTimeSelect?.(timeString, selectedDate!);
-  }
+    // Create booking object
+    const booking = {
+      id: `BOOK-${Date.now()}`,
+      stationId: route.params?.stationId,
+      stationName: location,
+      startTime: selectedStartDateTime,
+      endTime: selectedEndDateTime,
+      connectorType: 'CCS2',
+      status: 'pending' as const,
+      mode: 'mobile' as const,
+      vehicleId: route.params?.vehicleId,
+      vehicleName: route.params?.vehicleName,
+    };
 
-  function handleModeChange(newMode: 'fixed' | 'mobile'): void {
-    if (newMode === 'mobile') {
-      push('BOOK_MOBILE_LOCATION', {
-        station: route.params?.station,
-        stationId: route.params?.stationId,
-        stationName: route.params?.stationName || stationName,
-      });
-      return;
-    }
-    setMode(newMode);
-    onModeChange?.(newMode);
+    push('BOOK_FEE_PAYMENT', {
+      booking,
+      location,
+      vehicle: route.params?.vehicle,
+      durationMinutes,
+      timeZoneId,
+      reminders: {
+        smsEnabled,
+        smsOffsetHours,
+        emailEnabled,
+        emailOffsetHours,
+      },
+    });
   }
 
   const canGoNext = !!selectedDate;
@@ -454,59 +451,47 @@ export function TimePicker({
       {/* Green header */}
       <div className="sticky top-0 z-10 w-full" style={{ backgroundColor: EVZ_COLORS.green }}>
         <div className="max-w-md mx-auto h-14 px-4 flex items-center justify-between text-white">
-          <button className="inline-flex items-center gap-2" aria-label="Back" onClick={onBack}>
+          <button className="inline-flex items-center gap-2" aria-label="Back" onClick={back}>
             <ArrowLeft className="h-5 w-5" />
           </button>
-          <div className="flex items-center gap-2 min-w-0">
-            <MapPin className="h-5 w-5" />
-            <span className="font-semibold truncate">Reserve — {stationName}</span>
-          </div>
+          <span className="font-semibold">Schedule Mobile Charging</span>
           <div className="w-5" />
         </div>
       </div>
 
-      {/* Mode toggle */}
-      <div className="max-w-md mx-auto px-4 pt-3">
-        <div className="grid grid-cols-2 rounded-xl bg-slate-100 p-1 text-[12px]">
+      {/* Mobile charging context + location */}
+      <section className="max-w-md mx-auto px-4 pt-4 pb-4 bg-white border-b border-slate-100 space-y-3">
+        <div>
+          <p className="text-[10px] font-semibold tracking-wide text-emerald-600 uppercase">Schedule mobile charging</p>
+          <h1 className="mt-1 text-base font-semibold text-slate-900">Mobile charger to your location</h1>
+          <p className="mt-1 text-[11px] text-slate-500">
+            We'll dispatch a mobile charging unit to where your EV is currently parked.
+          </p>
+        </div>
+
+        <div className="mt-2 flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 px-3 py-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-2xl" style={{ backgroundColor: '#e6fff7' }}>
+            <MapPin className="h-5 w-5" style={{ color: EVZ_COLORS.green }} />
+          </div>
+          <div className="flex-1">
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">User location</p>
+            <p className="text-sm font-semibold text-slate-900">{location}</p>
+            <p className="mt-0.5 text-[11px] text-slate-500">This is where the mobile charger will meet your vehicle.</p>
+          </div>
           <button
             type="button"
-            className={`h-9 rounded-lg transition-colors ${
-              mode === 'fixed' ? 'bg-white shadow font-semibold text-slate-900' : 'text-slate-600'
-            }`}
-            onClick={() => handleModeChange('fixed')}
+            onClick={() => push('BOOK_MOBILE_LOCATION')}
+            className="text-[11px] font-semibold text-emerald-600 hover:text-emerald-700"
           >
-            Fixed Station
-          </button>
-          <button
-            type="button"
-            className={`h-9 rounded-lg transition-colors ${
-              mode !== 'fixed' ? 'bg-white shadow font-semibold text-slate-900' : 'text-slate-600'
-            }`}
-            onClick={() => handleModeChange('mobile')}
-          >
-            Mobile Charging
+            Change
           </button>
         </div>
-      </div>
+      </section>
 
       {/* Scrollable main content */}
-      <main className="max-w-md mx-auto flex-1 overflow-y-auto pb-24">
-        {/* Station + quick summary */}
+      <main className="max-w-md mx-auto overflow-y-auto pb-24">
+        {/* Summary section */}
         <section className="px-4 pt-4 pb-3 border-b border-slate-100 space-y-3">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-2xl" style={{ backgroundColor: '#e6fff7' }}>
-              <Zap className="h-5 w-5" style={{ color: EVZ_COLORS.green }} />
-            </div>
-            <div className="flex-1">
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Station</p>
-              <p className="text-sm font-semibold text-slate-900">{stationName}</p>
-              <p className="mt-0.5 flex items-center gap-1 text-[11px] text-slate-500">
-                <MapPin className="h-3 w-3" />
-                <span>Downtown Kampala · Multi-port</span>
-              </p>
-            </div>
-          </div>
-
           <div className="flex items-center justify-between text-[11px] text-slate-600">
             <div className="flex items-center gap-1.5">
               <Clock className="h-3.5 w-3.5" />
@@ -523,8 +508,7 @@ export function TimePicker({
           <div className="mt-1 text-[11px] text-slate-500">
             {selectedStartDateTime ? (
               <p>
-                {formatLongDate(selectedStartDateTime)} · {formatTime(selectedStartDateTime)} –{' '}
-                {formatTime(selectedEndDateTime)} ({formatDuration(durationMinutes)})
+                {formatLongDate(selectedStartDateTime)} · {formatTime(selectedStartDateTime)} – {formatTime(selectedEndDateTime)} ({formatDuration(durationMinutes)})
               </p>
             ) : (
               <p>Select a date and time to see your reserved window.</p>
@@ -532,7 +516,7 @@ export function TimePicker({
           </div>
         </section>
 
-        {/* Step 1 – pick a date, with month nav */}
+        {/* Step 1 – pick a date */}
         {step === 1 && (
           <section className="px-4 pt-4 pb-5 border-b border-slate-100">
             <p className="text-[11px] font-medium uppercase tracking-wide text-slate-500">Step 1 · Select a date</p>
@@ -722,21 +706,7 @@ export function TimePicker({
               </p>
               <p className="mt-0.5 text-[11px] text-slate-500">{activeTimeZone.label}</p>
 
-              {/* Instruction text */}
-              <div className="mt-3 flex items-center gap-2 text-[12px]">
-                <Calendar className="h-4 w-4 text-slate-600" />
-                <span className="text-slate-700">Select a start time from the slots below or</span>
-                <button
-                  type="button"
-                  onClick={() => setDurationPickerOpen(true)}
-                  className="underline text-slate-900"
-                >
-                  open picker
-                </button>
-              </div>
-
-              {/* Time slots grid - matching the image design */}
-              <div className="mt-3 grid grid-cols-4 gap-2">
+              <div className="mt-3 max-h-64 overflow-y-auto pr-1 space-y-2">
                 {ALL_SLOTS.map((slot) => {
                   if (!selectedDate) return null;
 
@@ -751,40 +721,66 @@ export function TimePicker({
                   const isSelected = selectedSlotId === slot.id;
 
                   const slotMinutes = slot.hour * 60 + slot.minute;
-                  const disabledBySelection =
+                  const disabledBySelection = !!(
                     selectedRange &&
                     selectedSlotId &&
                     slot.id !== selectedSlotId &&
                     slotMinutes > selectedRange.startMinutes &&
-                    slotMinutes < selectedRange.endMinutes;
+                    slotMinutes < selectedRange.endMinutes
+                  );
 
-                  // Check if slot is unavailable (overlaps with existing booking)
-                  const slotStartMinutes = slot.hour * 60 + slot.minute;
-                  const slotEndMinutes = slotStartMinutes + durationMinutes;
-                  const conflict = findOverlappingBooking(selectedDate, slotStartMinutes, slotEndMinutes);
-                  const isUnavailable = !!conflict;
+                  const isDisabled = isPast || disabledBySelection;
 
-                  const isDisabled = isPast || disabledBySelection || isUnavailable;
+                  const startLabel = formatTime(slotDate);
+                  const endLabel = formatTime(new Date(slotDate.getTime() + durationMinutes * 60000));
 
-                  const timeLabel = `${slot.hour.toString().padStart(2, '0')}:${slot.minute.toString().padStart(2, '0')}`;
+                  const buttonStyle = isSelected
+                    ? {
+                        backgroundColor: EVZ_COLORS.green,
+                        borderColor: EVZ_COLORS.green,
+                      }
+                    : undefined;
 
-                  const base = 'h-9 rounded-lg text-[12px] border';
-                  const style =
-                    isUnavailable
-                      ? 'bg-rose-50 text-rose-700 border-rose-200'
-                      : isSelected
-                      ? 'bg-white text-slate-900 border-purple-500 ring-2 ring-purple-500'
-                      : 'bg-white text-slate-700 border-slate-200';
+                  const chipStyle = isSelected
+                    ? {
+                        borderColor: EVZ_COLORS.green,
+                        color: EVZ_COLORS.green,
+                        backgroundColor: 'white',
+                      }
+                    : {
+                        backgroundColor: EVZ_COLORS.green,
+                        color: 'white',
+                      };
+
+                  const label = isSelected ? 'Selected' : disabledBySelection ? 'Blocked' : 'Confirm';
 
                   return (
                     <button
                       key={slot.id}
                       type="button"
-                      onClick={() => handleSelectSlot(slot)}
                       disabled={isDisabled}
-                      className={cx(base, style, isDisabled && !isSelected && 'opacity-50 cursor-not-allowed')}
+                      onClick={() => handleSelectSlot(slot)}
+                      className={cx(
+                        'flex w-full items-center justify-between rounded-xl border px-3 py-2 text-xs transition',
+                        isSelected
+                          ? 'text-white'
+                          : 'border-slate-200 bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50',
+                        isDisabled && !isSelected && 'opacity-40 cursor-not-allowed'
+                      )}
+                      style={buttonStyle}
                     >
-                      {timeLabel}
+                      <div className="flex flex-col items-start">
+                        <span className="font-semibold">{startLabel}</span>
+                        <span className={cx('text-[10px]', isSelected ? 'text-white/90' : 'text-slate-400')}>
+                          Ends {endLabel} · {formatDuration(durationMinutes)}
+                        </span>
+                      </div>
+                      <span
+                        className={cx('inline-flex items-center rounded-full px-3 py-1 text-[11px] font-medium border')}
+                        style={chipStyle}
+                      >
+                        {label}
+                      </span>
                     </button>
                   );
                 })}
@@ -830,7 +826,7 @@ export function TimePicker({
               </div>
             </section>
 
-            {/* Reminders section - simplified for mobile */}
+            {/* Reminders section */}
             <section className="px-4 pt-4 pb-5">
               <h2 className="text-sm font-semibold text-slate-900">Reminders</h2>
               <p className="mt-1 text-[11px] text-slate-500">
@@ -928,4 +924,3 @@ export function TimePicker({
   );
 }
 
-export default TimePicker;

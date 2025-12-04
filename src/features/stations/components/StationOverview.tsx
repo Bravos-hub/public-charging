@@ -5,7 +5,6 @@
 import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { MapPin, ArrowLeft, Share2, Heart, Navigation2, Phone, Images, MessageSquare, Star } from 'lucide-react';
 import { EVZ_COLORS } from '../../../core/utils/constants';
-import { Header } from '../../../shared/components/ui/Header';
 import type { Station } from '../../../core/types';
 import { useApp } from '../../../core';
 import { useNavigation } from '../../../core';
@@ -123,7 +122,7 @@ export function StationOverview({
     if (!gallery) return;
 
     function handleScroll(): void {
-      const galleryEl = galleryRef.current;
+      const galleryEl = gallery;
       if (!galleryEl) return;
       const scrollLeft = galleryEl.scrollLeft;
       const scrollWidth = galleryEl.scrollWidth;
@@ -135,10 +134,7 @@ export function StationOverview({
 
     gallery.addEventListener('scroll', handleScroll);
     return () => {
-      const galleryEl = galleryRef.current;
-      if (galleryEl) {
-        galleryEl.removeEventListener('scroll', handleScroll);
-      }
+      gallery.removeEventListener('scroll', handleScroll);
     };
   }, [imageCount]);
 

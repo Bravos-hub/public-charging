@@ -151,13 +151,21 @@ export function EnableLocationScreen(): React.ReactElement {
                 <button className="h-11 rounded-xl border border-slate-300 bg-white text-slate-700">
                   Maybe later
                 </button>
-                <a
-                  href="#"
+                <button
+                  type="button"
                   className="h-11 grid place-items-center rounded-xl text-white font-medium"
                   style={{ backgroundColor: EVZ_COLORS.orange }}
+                  onClick={() => {
+                    // Open device settings for location permissions
+                    if (navigator.permissions) {
+                      navigator.permissions.query({ name: 'geolocation' }).then(() => {
+                        // Permission query complete
+                      });
+                    }
+                  }}
                 >
                   Open Settings
-                </a>
+                </button>
               </div>
             </motion.div>
           )}

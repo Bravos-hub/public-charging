@@ -14,7 +14,7 @@ function StatusTag({ state }: { state: 'compatible' | 'adapter' | 'incompatible'
 }
 
 export function CompatibilityHelper(): React.ReactElement {
-  const vehicle = { name: 'Model X', connectors: ['CCS2', 'Type2'], acMax: 22, dcMax: 60 };
+  const vehicle = useMemo(() => ({ name: 'Model X', connectors: ['CCS2', 'Type2'], acMax: 22, dcMax: 60 }), []);
   const [onlyCompat, setOnlyCompat] = useState(true);
   const [powerMin, setPowerMin] = useState(0);
   const rows = useMemo(

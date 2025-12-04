@@ -3,7 +3,7 @@
  */
 
 import React, { useMemo, useState } from 'react';
-import { Wallet as WalletIcon, CreditCard, Plus, Star, Info, RefreshCw, FileDown } from 'lucide-react';
+import { CreditCard, Plus, Star, Info, RefreshCw, FileDown } from 'lucide-react';
 import { EVZ_COLORS } from '../../../core/utils/constants';
 import { useApp, useNavigation } from '../../../core';
 import type { PaymentMethod } from '../../../core/types';

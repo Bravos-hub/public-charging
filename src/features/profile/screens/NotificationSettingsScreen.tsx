@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { ArrowLeft, Bell, ShieldCheck, CalendarClock, Plug, CreditCard, Megaphone, Info } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, CalendarClock, Plug, CreditCard, Megaphone, Info } from 'lucide-react';
 import { EVZ_COLORS } from '../../../core/utils/constants';
 import { useApp, useNavigation } from '../../../core';
 

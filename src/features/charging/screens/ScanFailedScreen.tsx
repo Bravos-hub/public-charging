@@ -3,14 +3,13 @@
  * Full-screen wrapper for scan failure error
  */
 
-import React, { useState } from 'react';
+import React from 'react';
 import { ArrowLeft, AlertTriangle, QrCode, Keyboard, Info } from 'lucide-react';
 import { EVZ_COLORS } from '../../../core/utils/constants';
 import { useNavigation } from '../../../core';
 
 export function ScanFailedScreen(): React.ReactElement {
   const { route, back, push } = useNavigation();
-  const [id, setId] = useState('');
 
   function handleRetryScan(): void {
     // Navigate back to QR scanner
@@ -18,16 +17,8 @@ export function ScanFailedScreen(): React.ReactElement {
   }
 
   function handleEnterId(): void {
-    if (id.trim()) {
-      // Navigate to enter charger ID screen with the entered ID
-      push('ACTIVATION_ENTER_ID', {
-        ...route.params,
-        chargerId: id.trim(),
-      });
-    } else {
-      // Navigate to enter charger ID screen without pre-filled ID
-      push('ACTIVATION_ENTER_ID', route.params);
-    }
+    // Navigate to enter charger ID screen
+    push('ACTIVATION_ENTER_ID', route.params);
   }
 
   return (

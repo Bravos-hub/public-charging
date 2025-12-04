@@ -10,7 +10,7 @@ import type { Station } from '../../core/types';
 import { useApp } from '../../core';
 
 export function StationPreviewScreen(): React.ReactElement {
-  const { route, back, push } = useNavigation();
+  const { route, push } = useNavigation();
   const { favorites, setFavorites } = useApp();
   
   // Get station from route params or use default

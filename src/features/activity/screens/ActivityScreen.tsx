@@ -20,7 +20,6 @@ import {
 } from 'lucide-react';
 import { EVZ_COLORS } from '../../../core/utils/constants';
 import { useNavigation } from '../../../core';
-import type { Booking, ChargingSession } from '../../../core/types';
 
 interface EmptyStateProps {
   icon?: React.ComponentType<{ className?: string }>;

@@ -36,8 +36,6 @@ export function PrepaidChargingScreen(): React.ReactElement {
   // Get station and connector from route params
   const station: Station | undefined = route.params?.station;
   const connector: Connector | undefined = route.params?.connector;
-  const scanResult = route.params?.scanResult;
-  const chargerId = route.params?.chargerId;
 
   // Default values
   const connectorType = connector?.type || 'CCS2';

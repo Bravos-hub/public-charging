@@ -5,7 +5,6 @@
 import React from 'react';
 import { MapPin, ArrowLeft, PlugZap } from 'lucide-react';
 import { EVZ_COLORS } from '../../../core/utils/constants';
-import { Header } from '../../../shared/components/ui/Header';
 import type { Connector } from '../../../core/types';
 
 interface StatusDotProps {
