@@ -53,4 +53,5 @@ src/
 ## Notes
 - UI ships with demo data to showcase flows; connect real APIs via the SDK and real-time SSE hooks.
 - Service worker update prompt appears only in production; development aggressively unregisters SWs to avoid reload loops (see `RELOAD_LOOP_FIX.md`).
+- **Main Documentation**: `DOCUMENTATION.md` - Comprehensive developer guide.
 - Additional docs: `PROJECT_FINALIZATION.md`, `ANALYSIS_SUMMARY.md`, `COMPONENT_MAPPING.md`, `TAILWIND_SETUP.md`.
