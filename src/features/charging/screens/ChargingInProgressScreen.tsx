@@ -2,7 +2,7 @@
  * Charging In Progress Screen (TypeScript)
  */
 
-import React, { useEffect, useMemo, useState, useRef } from 'react';
+import React, { useEffect, useMemo, useState, useRef, useCallback } from 'react';
 import { ArrowLeft, Zap, Gauge, Clock3, Fuel, AlertTriangle } from 'lucide-react';
 import { EVZ_COLORS } from '../../../core/utils/constants';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -84,7 +84,7 @@ export function ChargingInProgressScreen({
     currentXRef.current = clientX;
   }
 
-  function updateSwipeProgress(clientX: number): void {
+  const updateSwipeProgress = useCallback((clientX: number): void => {
     if (!swipeContainerRef.current) return;
     
     const container = swipeContainerRef.current;
@@ -97,9 +97,9 @@ export function ChargingInProgressScreen({
     
     swipeProgressRef.current = progress;
     setSwipeProgress(progress);
-  }
+  }, []);
 
-  function handleSwipeEnd(): void {
+  const handleSwipeEnd = useCallback((): void => {
     if (!isDragging) return;
     
     const finalProgress = swipeProgressRef.current;
@@ -115,7 +115,7 @@ export function ChargingInProgressScreen({
       setSwipeProgress(0);
       swipeProgressRef.current = 0;
     }, 300);
-  }
+  }, [isDragging]);
 
   // Add global mouse/touch listeners when dragging
   useEffect(() => {
@@ -150,7 +150,7 @@ export function ChargingInProgressScreen({
       window.removeEventListener('touchmove', handleTouchMove);
       window.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [isDragging]);
+  }, [isDragging, updateSwipeProgress, handleSwipeEnd]);
 
   return (
     <div className="min-h-[100dvh] bg-white text-slate-900">
