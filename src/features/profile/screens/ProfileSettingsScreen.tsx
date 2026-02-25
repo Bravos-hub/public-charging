@@ -22,21 +22,18 @@ export function ProfileSettingsScreen(): React.ReactElement {
 
   function handleSave(): void {
     // In a real app, this would save the user data
-    console.log('Saving profile:', { fullName, email, phone, twoFactorEnabled });
     // Navigate back after saving
     back();
   }
 
   function handleSignOut(): void {
     // In a real app, this would sign out the user
-    console.log('Signing out...');
     // Could navigate to login screen or clear session
     back();
   }
 
   function handleChangePassword(): void {
     // In a real app, this would navigate to change password screen
-    console.log('Change password');
     alert('Change password feature coming soon!');
   }
 
