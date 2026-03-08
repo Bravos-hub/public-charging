@@ -170,9 +170,9 @@ export function DiscoverScreen(): React.ReactElement {
       
       // Search by availability count (e.g., "3 available", "available 3")
       const availMatch = 
-        query.includes('available') && station.availability.available > 0 ||
-        /^\d+\s*available/.test(query) && station.availability.available >= parseInt(query) ||
-        /available\s*\d+/.test(query) && station.availability.available >= parseInt(query.replace(/\D/g, ''));
+        (query.includes('available') && station.availability.available > 0) ||
+        (/^\d+\s*available/.test(query) && station.availability.available >= parseInt(query)) ||
+        (/available\s*\d+/.test(query) && station.availability.available >= parseInt(query.replace(/\D/g, '')));
       
       return nameMatch || locationMatch || statusMatch || availMatch;
     });
