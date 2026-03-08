@@ -26,6 +26,25 @@ interface TimePickerProps {
   onModeChange?: (mode: 'fixed' | 'mobile') => void;
   onTimeSelect?: (time: string, date: Date) => void;
   onBack?: () => void;
+  location?: string;
+  variant?: 'grid' | 'list';
+  showModeToggle?: boolean;
+  title?: string;
+  onConfirm?: (data: {
+    time: string;
+    date: Date;
+    duration: number;
+    timeZoneId: string;
+    startDateTime: Date;
+    endDateTime: Date;
+    reminders: {
+      smsEnabled: boolean;
+      smsOffsetHours: number;
+      emailEnabled: boolean;
+      emailOffsetHours: number;
+    };
+  }) => void;
+  showMapPin?: boolean;
 }
 
 interface TimeSlot {
@@ -294,6 +313,12 @@ export function TimePicker({
   onModeChange,
   onTimeSelect,
   onBack,
+  location,
+  variant = 'grid',
+  showModeToggle = true,
+  showMapPin = true,
+  title: headerTitle,
+  onConfirm,
 }: TimePickerProps): React.ReactElement {
   const { route, push } = useNavigation();
   const today = useMemo(() => stripTime(new Date()), []);
@@ -431,7 +456,25 @@ export function TimePicker({
 
     // Format time as HH:MM for onTimeSelect callback
     const timeString = `${selectedSlot!.hour.toString().padStart(2, '0')}:${selectedSlot!.minute.toString().padStart(2, '0')}`;
-    onTimeSelect?.(timeString, selectedDate!);
+
+    if (onConfirm) {
+      onConfirm({
+        time: timeString,
+        date: selectedDate!,
+        duration: durationMinutes,
+        timeZoneId,
+        startDateTime: selectedStartDateTime!,
+        endDateTime: selectedEndDateTime!,
+        reminders: {
+          smsEnabled,
+          smsOffsetHours,
+          emailEnabled,
+          emailOffsetHours,
+        },
+      });
+    } else {
+      onTimeSelect?.(timeString, selectedDate!);
+    }
   }
 
   function handleModeChange(newMode: 'fixed' | 'mobile'): void {
@@ -458,54 +501,89 @@ export function TimePicker({
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div className="flex items-center gap-2 min-w-0">
-            <MapPin className="h-5 w-5" />
-            <span className="font-semibold truncate">Reserve — {stationName}</span>
+            {showMapPin && <MapPin className="h-5 w-5" />}
+            <span className="font-semibold truncate">{headerTitle || `Reserve — ${stationName}`}</span>
           </div>
           <div className="w-5" />
         </div>
       </div>
 
       {/* Mode toggle */}
-      <div className="max-w-md mx-auto px-4 pt-3">
-        <div className="grid grid-cols-2 rounded-xl bg-slate-100 p-1 text-[12px]">
-          <button
-            type="button"
-            className={`h-9 rounded-lg transition-colors ${
-              mode === 'fixed' ? 'bg-white shadow font-semibold text-slate-900' : 'text-slate-600'
-            }`}
-            onClick={() => handleModeChange('fixed')}
-          >
-            Fixed Station
-          </button>
-          <button
-            type="button"
-            className={`h-9 rounded-lg transition-colors ${
-              mode !== 'fixed' ? 'bg-white shadow font-semibold text-slate-900' : 'text-slate-600'
-            }`}
-            onClick={() => handleModeChange('mobile')}
-          >
-            Mobile Charging
-          </button>
+      {showModeToggle && (
+        <div className="max-w-md mx-auto px-4 pt-3">
+          <div className="grid grid-cols-2 rounded-xl bg-slate-100 p-1 text-[12px]">
+            <button
+              type="button"
+              className={`h-9 rounded-lg transition-colors ${
+                mode === 'fixed' ? 'bg-white shadow font-semibold text-slate-900' : 'text-slate-600'
+              }`}
+              onClick={() => handleModeChange('fixed')}
+            >
+              Fixed Station
+            </button>
+            <button
+              type="button"
+              className={`h-9 rounded-lg transition-colors ${
+                mode !== 'fixed' ? 'bg-white shadow font-semibold text-slate-900' : 'text-slate-600'
+              }`}
+              onClick={() => handleModeChange('mobile')}
+            >
+              Mobile Charging
+            </button>
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Mobile charging context + location */}
+      {location && (
+        <section className="max-w-md mx-auto px-4 pt-4 pb-4 bg-white border-b border-slate-100 space-y-3">
+          <div>
+            <p className="text-[10px] font-semibold tracking-wide text-emerald-600 uppercase">Schedule mobile charging</p>
+            <h1 className="mt-1 text-base font-semibold text-slate-900">Mobile charger to your location</h1>
+            <p className="mt-1 text-[11px] text-slate-500">
+              We'll dispatch a mobile charging unit to where your EV is currently parked.
+            </p>
+          </div>
+
+          <div className="mt-2 flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 px-3 py-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-2xl" style={{ backgroundColor: '#e6fff7' }}>
+              <MapPin className="h-5 w-5" style={{ color: EVZ_COLORS.green }} />
+            </div>
+            <div className="flex-1">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">User location</p>
+              <p className="text-sm font-semibold text-slate-900">{location}</p>
+              <p className="mt-0.5 text-[11px] text-slate-500">This is where the mobile charger will meet your vehicle.</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => push('BOOK_MOBILE_LOCATION')}
+              className="text-[11px] font-semibold text-emerald-600 hover:text-emerald-700"
+            >
+              Change
+            </button>
+          </div>
+        </section>
+      )}
 
       {/* Scrollable main content */}
       <main className="max-w-md mx-auto flex-1 overflow-y-auto pb-24">
         {/* Station + quick summary */}
         <section className="px-4 pt-4 pb-3 border-b border-slate-100 space-y-3">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-2xl" style={{ backgroundColor: '#e6fff7' }}>
-              <Zap className="h-5 w-5" style={{ color: EVZ_COLORS.green }} />
+          {!location && (
+            <div className="flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-2xl" style={{ backgroundColor: '#e6fff7' }}>
+                <Zap className="h-5 w-5" style={{ color: EVZ_COLORS.green }} />
+              </div>
+              <div className="flex-1">
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Station</p>
+                <p className="text-sm font-semibold text-slate-900">{stationName}</p>
+                <p className="mt-0.5 flex items-center gap-1 text-[11px] text-slate-500">
+                  <MapPin className="h-3 w-3" />
+                  <span>Downtown Kampala · Multi-port</span>
+                </p>
+              </div>
             </div>
-            <div className="flex-1">
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Station</p>
-              <p className="text-sm font-semibold text-slate-900">{stationName}</p>
-              <p className="mt-0.5 flex items-center gap-1 text-[11px] text-slate-500">
-                <MapPin className="h-3 w-3" />
-                <span>Downtown Kampala · Multi-port</span>
-              </p>
-            </div>
-          </div>
+          )}
 
           <div className="flex items-center justify-between text-[11px] text-slate-600">
             <div className="flex items-center gap-1.5">
@@ -735,60 +813,144 @@ export function TimePicker({
                 </button>
               </div>
 
-              {/* Time slots grid - matching the image design */}
-              <div className="mt-3 grid grid-cols-4 gap-2">
-                {ALL_SLOTS.map((slot) => {
-                  if (!selectedDate) return null;
+              {/* Time slots selection */}
+              {variant === 'grid' ? (
+                /* Time slots grid - matching the image design */
+                <div className="mt-3 grid grid-cols-4 gap-2">
+                  {ALL_SLOTS.map((slot) => {
+                    if (!selectedDate) return null;
 
-                  const slotDate = new Date(
-                    selectedDate.getFullYear(),
-                    selectedDate.getMonth(),
-                    selectedDate.getDate(),
-                    slot.hour,
-                    slot.minute
-                  );
-                  const isPast = slotDate.getTime() < Date.now();
-                  const isSelected = selectedSlotId === slot.id;
+                    const slotDate = new Date(
+                      selectedDate.getFullYear(),
+                      selectedDate.getMonth(),
+                      selectedDate.getDate(),
+                      slot.hour,
+                      slot.minute
+                    );
+                    const isPast = slotDate.getTime() < Date.now();
+                    const isSelected = selectedSlotId === slot.id;
 
-                  const slotMinutes = slot.hour * 60 + slot.minute;
-                  const disabledBySelection =
-                    selectedRange &&
-                    selectedSlotId &&
-                    slot.id !== selectedSlotId &&
-                    slotMinutes > selectedRange.startMinutes &&
-                    slotMinutes < selectedRange.endMinutes;
+                    const slotMinutes = slot.hour * 60 + slot.minute;
+                    const disabledBySelection =
+                      selectedRange &&
+                      selectedSlotId &&
+                      slot.id !== selectedSlotId &&
+                      slotMinutes > selectedRange.startMinutes &&
+                      slotMinutes < selectedRange.endMinutes;
 
-                  // Check if slot is unavailable (overlaps with existing booking)
-                  const slotStartMinutes = slot.hour * 60 + slot.minute;
-                  const slotEndMinutes = slotStartMinutes + durationMinutes;
-                  const conflict = findOverlappingBooking(selectedDate, slotStartMinutes, slotEndMinutes);
-                  const isUnavailable = !!conflict;
+                    // Check if slot is unavailable (overlaps with existing booking)
+                    const slotStartMinutes = slot.hour * 60 + slot.minute;
+                    const slotEndMinutes = slotStartMinutes + durationMinutes;
+                    const conflict = findOverlappingBooking(selectedDate, slotStartMinutes, slotEndMinutes);
+                    const isUnavailable = !!conflict;
 
-                  const isDisabled = isPast || disabledBySelection || isUnavailable;
+                    const isDisabled = isPast || disabledBySelection || isUnavailable;
 
-                  const timeLabel = `${slot.hour.toString().padStart(2, '0')}:${slot.minute.toString().padStart(2, '0')}`;
+                    const timeLabel = `${slot.hour.toString().padStart(2, '0')}:${slot.minute.toString().padStart(2, '0')}`;
 
-                  const base = 'h-9 rounded-lg text-[12px] border';
-                  const style =
-                    isUnavailable
-                      ? 'bg-rose-50 text-rose-700 border-rose-200'
-                      : isSelected
-                      ? 'bg-white text-slate-900 border-purple-500 ring-2 ring-purple-500'
-                      : 'bg-white text-slate-700 border-slate-200';
+                    const base = 'h-9 rounded-lg text-[12px] border';
+                    const style =
+                      isUnavailable
+                        ? 'bg-rose-50 text-rose-700 border-rose-200'
+                        : isSelected
+                        ? 'bg-white text-slate-900 border-purple-500 ring-2 ring-purple-500'
+                        : 'bg-white text-slate-700 border-slate-200';
 
-                  return (
-                    <button
-                      key={slot.id}
-                      type="button"
-                      onClick={() => handleSelectSlot(slot)}
-                      disabled={isDisabled}
-                      className={cx(base, style, isDisabled && !isSelected && 'opacity-50 cursor-not-allowed')}
-                    >
-                      {timeLabel}
-                    </button>
-                  );
-                })}
-              </div>
+                    return (
+                      <button
+                        key={slot.id}
+                        type="button"
+                        onClick={() => handleSelectSlot(slot)}
+                        disabled={isDisabled}
+                        className={cx(base, style, isDisabled && !isSelected && 'opacity-50 cursor-not-allowed')}
+                      >
+                        {timeLabel}
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                /* Time slots list variant */
+                <div className="mt-3 max-h-64 overflow-y-auto pr-1 space-y-2">
+                  {ALL_SLOTS.map((slot) => {
+                    if (!selectedDate) return null;
+
+                    const slotDate = new Date(
+                      selectedDate.getFullYear(),
+                      selectedDate.getMonth(),
+                      selectedDate.getDate(),
+                      slot.hour,
+                      slot.minute
+                    );
+                    const isPast = slotDate.getTime() < Date.now();
+                    const isSelected = selectedSlotId === slot.id;
+
+                    const slotMinutes = slot.hour * 60 + slot.minute;
+                    const disabledBySelection = !!(
+                      selectedRange &&
+                      selectedSlotId &&
+                      slot.id !== selectedSlotId &&
+                      slotMinutes > selectedRange.startMinutes &&
+                      slotMinutes < selectedRange.endMinutes
+                    );
+
+                    const isDisabled = isPast || disabledBySelection;
+
+                    const startLabel = formatTime(slotDate);
+                    const endLabel = formatTime(new Date(slotDate.getTime() + durationMinutes * 60000));
+
+                    const buttonStyle = isSelected
+                      ? {
+                          backgroundColor: EVZ_COLORS.green,
+                          borderColor: EVZ_COLORS.green,
+                        }
+                      : undefined;
+
+                    const chipStyle = isSelected
+                      ? {
+                          borderColor: EVZ_COLORS.green,
+                          color: EVZ_COLORS.green,
+                          backgroundColor: 'white',
+                        }
+                      : {
+                          backgroundColor: EVZ_COLORS.green,
+                          color: 'white',
+                        };
+
+                    const label = isSelected ? 'Selected' : disabledBySelection ? 'Blocked' : 'Confirm';
+
+                    return (
+                      <button
+                        key={slot.id}
+                        type="button"
+                        disabled={isDisabled}
+                        onClick={() => handleSelectSlot(slot)}
+                        className={cx(
+                          'flex w-full items-center justify-between rounded-xl border px-3 py-2 text-xs transition',
+                          isSelected
+                            ? 'text-white'
+                            : 'border-slate-200 bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50',
+                          isDisabled && !isSelected && 'opacity-40 cursor-not-allowed'
+                        )}
+                        style={buttonStyle}
+                      >
+                        <div className="flex flex-col items-start">
+                          <span className="font-semibold">{startLabel}</span>
+                          <span className={cx('text-[10px]', isSelected ? 'text-white/90' : 'text-slate-400')}>
+                            Ends {endLabel} · {formatDuration(durationMinutes)}
+                          </span>
+                        </div>
+                        <span
+                          className={cx('inline-flex items-center rounded-full px-3 py-1 text-[11px] font-medium border')}
+                          style={chipStyle}
+                        >
+                          {label}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </section>
 
             {/* Session summary + confirm button */}
