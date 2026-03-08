@@ -43,7 +43,6 @@ import { BookingConfirmationScreen } from '../features/booking/screens/BookingCo
 import { BookingDetailScreen } from '../features/booking/screens/BookingDetailScreen';
 import { MobileChargingLocationScreen } from '../features/booking/screens/MobileChargingLocationScreen';
 import { MobileChargingTimeTargetsScreen } from '../features/booking/screens/MobileChargingTimeTargetsScreen';
-import { MobileChargingScheduleScreen } from '../features/booking/screens/MobileChargingScheduleScreen';
 import { MobileChargingOnTheWayScreen } from '../features/booking/screens/MobileChargingOnTheWayScreen';
 import { QRScanner } from '../features/charging/components/QRScanner';
 import { ChargingReadyScreen } from '../features/charging/screens/ChargingReadyScreen';
@@ -209,7 +208,39 @@ function AppContent(): React.ReactElement {
             )}
             {route.name === 'BOOK_MOBILE_LOCATION' && <MobileChargingLocationScreen />}
             {route.name === 'BOOK_MOBILE_TIME_TARGETS' && <MobileChargingTimeTargetsScreen />}
-            {route.name === 'BOOK_MOBILE_SCHEDULE' && <MobileChargingScheduleScreen />}
+            {route.name === 'BOOK_MOBILE_SCHEDULE' && (
+              <TimePicker
+                stationName={route.params?.stationName || 'Mobile Charging'}
+                location={route.params?.location || 'Your current EV location'}
+                variant="list"
+                showModeToggle={false}
+                showMapPin={false}
+                title="Schedule Mobile Charging"
+                onConfirm={(data) => {
+                  const booking = {
+                    id: `BOOK-${Date.now()}`,
+                    stationId: route.params?.stationId,
+                    stationName: route.params?.location || 'Your current EV location',
+                    startTime: data.startDateTime,
+                    endTime: data.endDateTime,
+                    connectorType: 'CCS2',
+                    status: 'pending' as const,
+                    mode: 'mobile' as const,
+                    vehicleId: route.params?.vehicleId,
+                    vehicleName: route.params?.vehicleName,
+                  };
+                  push('BOOK_FEE_PAYMENT', {
+                    booking,
+                    location: route.params?.location || 'Your current EV location',
+                    vehicle: route.params?.vehicle,
+                    durationMinutes: data.duration,
+                    timeZoneId: data.timeZoneId,
+                    reminders: data.reminders,
+                  });
+                }}
+                onBack={back}
+              />
+            )}
             {route.name === 'BOOK_MOBILE_ON_THE_WAY' && <MobileChargingOnTheWayScreen />}
             {route.name === 'BOOK_MOBILE_TIME' && (
               <TimePicker
