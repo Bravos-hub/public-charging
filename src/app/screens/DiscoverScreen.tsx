@@ -180,11 +180,17 @@ export function DiscoverScreen(): React.ReactElement {
 
   // Get station data for list display
   const stationsListData = useMemo(() => {
-    return stationsToDisplay.map((point) => ({
-      point,
-      station: STATION_DATA[point.id],
-      distance: calculateDistance(point.id),
-    })).filter((item) => item.station !== undefined);
+    return stationsToDisplay.reduce<{ point: StationPoint; station: Station; distance: string }[]>((acc, point) => {
+      const station = STATION_DATA[point.id];
+      if (station !== undefined) {
+        acc.push({
+          point,
+          station,
+          distance: calculateDistance(point.id),
+        });
+      }
+      return acc;
+    }, []);
   }, [stationsToDisplay]);
 
   function handleFilterClick(): void {
